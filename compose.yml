@@ -1,0 +1,25 @@
+services:
+  mysql:
+    image: mysql:8.4.8
+    environment:
+      MYSQL_ROOT_PASSWORD: ${FLASHGUARD_MYSQL_ROOT_PASSWORD:-flashguard-root-dev}
+      MYSQL_DATABASE: ${FLASHGUARD_MYSQL_DATABASE:-flashguard}
+      MYSQL_USER: ${FLASHGUARD_DB_USERNAME:-flashguard}
+      MYSQL_PASSWORD: ${FLASHGUARD_DB_PASSWORD:-flashguard-dev}
+    ports:
+      - "${FLASHGUARD_MYSQL_PORT:-3306}:3306"
+    command:
+      - --default-time-zone=+00:00
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - mysqladmin ping -h 127.0.0.1 -uroot -p"$$MYSQL_ROOT_PASSWORD" --silent
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 20s
+    volumes:
+      - flashguard-mysql-data:/var/lib/mysql
+
+volumes:
+  flashguard-mysql-data:
