@@ -1,0 +1,8 @@
+/target/
+/.idea/
+/.vscode/
+*.iml
+.env
+*.log
+hs_err_pid*
+

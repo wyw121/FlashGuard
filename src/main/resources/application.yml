@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: flashguard
+  datasource:
+    url: ${FLASHGUARD_DB_URL:jdbc:mysql://localhost:3306/flashguard?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC}
+    username: ${FLASHGUARD_DB_USERNAME:flashguard}
+    password: ${FLASHGUARD_DB_PASSWORD:flashguard-dev}
+    hikari:
+      maximum-pool-size: ${FLASHGUARD_DB_POOL_SIZE:20}
+      minimum-idle: 2
+  flyway:
+    enabled: true
+  jackson:
+    default-property-inclusion: non_null
+
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
+
+server:
+  port: ${FLASHGUARD_PORT:8080}
+  error:
+    include-message: never
+    include-stacktrace: never
+
