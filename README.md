@@ -163,6 +163,14 @@ curl.exe -sS "http://localhost:8080/api/v1/orders/$orderNo"
 
 再次执行同一个 POST 会返回 HTTP 200、业务码 `REPLAY` 和原订单；换用新的 `requestId` 但保持 `userId=10001`，会返回 HTTP 409 和 `DUPLICATE_PURCHASE`。
 
+使用 Postman 时，参与请求的方法选择 `POST`，Body 选择 `raw` → `JSON`，请求头为 `Content-Type: application/json`。默认地址为 `http://localhost:8080/api/v1/activities/1001/participations`；若设置了 `FLASHGUARD_PORT=18080`，地址端口也要改成 `18080`。
+
+```json
+{"userId":10001,"requestId":"postman-001"}
+```
+
+参与地址使用 GET 会返回 `405 METHOD_NOT_ALLOWED`（`Allow: POST`）；发送 Text 或表单格式会返回 `415 UNSUPPORTED_MEDIA_TYPE`，响应 Accept 头列出支持的格式。这些属于请求错误。真正的服务器异常仍返回 `500 INTERNAL_ERROR`，具体原因保留在应用日志中。
+
 停止应用后，可保留数据卷关闭 Compose：
 
 ```powershell

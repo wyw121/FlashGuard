@@ -2,9 +2,11 @@ package com.flashguard.participation;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.flashguard.shared.error.BusinessCode;
@@ -102,6 +104,39 @@ class ParticipationControllerTest {
                 .content("{\"userId\":2001,\"requestId\":\"" + tooLong + "\"}"))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+    }
+
+    @Test
+    void participationWithGetReturnsMethodNotAllowedAndAllowedMethod() throws Exception {
+        mockMvc.perform(get("/api/v1/activities/1001/participations"))
+            .andExpect(status().isMethodNotAllowed())
+            .andExpect(header().string("Allow", "POST"))
+            .andExpect(jsonPath("$.code").value("METHOD_NOT_ALLOWED"));
+
+        verifyNoInteractions(service);
+    }
+
+    @Test
+    void plainTextBodyReturnsUnsupportedMediaTypeWithAcceptedFormats() throws Exception {
+        mockMvc.perform(post("/api/v1/activities/1001/participations")
+                .contentType(MediaType.TEXT_PLAIN)
+                .content(validBody()))
+            .andExpect(status().isUnsupportedMediaType())
+            .andExpect(header().string("Accept", org.hamcrest.Matchers.containsString("application/json")))
+            .andExpect(jsonPath("$.code").value("UNSUPPORTED_MEDIA_TYPE"));
+
+        verifyNoInteractions(service);
+    }
+
+    @Test
+    void formBodyReturnsUnsupportedMediaType() throws Exception {
+        mockMvc.perform(post("/api/v1/activities/1001/participations")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .content("userId=10001&requestId=postman-001"))
+            .andExpect(status().isUnsupportedMediaType())
+            .andExpect(jsonPath("$.code").value("UNSUPPORTED_MEDIA_TYPE"));
+
+        verifyNoInteractions(service);
     }
 
     @Test

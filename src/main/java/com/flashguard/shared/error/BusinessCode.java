@@ -4,6 +4,8 @@ public enum BusinessCode {
     SUCCESS("Success"),
     REPLAY("Request already completed"),
     VALIDATION_ERROR("Request validation failed"),
+    METHOD_NOT_ALLOWED("HTTP method is not supported for this endpoint"),
+    UNSUPPORTED_MEDIA_TYPE("Unsupported Content-Type; use application/json"),
     ACTIVITY_NOT_FOUND("Activity not found"),
     ACTIVITY_NOT_STARTED("Activity has not started"),
     ACTIVITY_ENDED("Activity has ended or is unavailable"),
