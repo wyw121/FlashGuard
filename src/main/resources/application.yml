@@ -10,8 +10,18 @@ spring:
       minimum-idle: 2
   flyway:
     enabled: true
+  data:
+    redis:
+      host: ${FLASHGUARD_REDIS_HOST:localhost}
+      port: ${FLASHGUARD_REDIS_PORT:6379}
+      connect-timeout: ${FLASHGUARD_REDIS_CONNECT_TIMEOUT:2s}
+      timeout: ${FLASHGUARD_REDIS_COMMAND_TIMEOUT:2s}
   jackson:
     default-property-inclusion: non_null
+
+flashguard:
+  reservation:
+    timeout: ${FLASHGUARD_RESERVATION_TIMEOUT:120s}
 
 mybatis:
   configuration:
@@ -22,4 +32,3 @@ server:
   error:
     include-message: never
     include-stacktrace: never
-
