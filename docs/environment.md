@@ -1,6 +1,6 @@
 # FlashGuard 开发环境
 
-记录时间：2026-09-05，Asia/Shanghai。
+记录时间：2026-09-06，Asia/Shanghai。历史回退快照保留在下方，当前正式镜像结果优先。
 
 ## 本机实际观测
 
@@ -27,13 +27,32 @@
 | MyBatis Spring Boot Starter | 3.0.5 |
 | Testcontainers | 2.0.5 |
 | 正式 MySQL 容器目标 | `mysql:8.4.8` |
+| 正式 Redis 容器目标 | `redis:7.4.8` |
 | RocketMQ Spring Boot Starter（后续阶段） | 2.3.6 |
 
 `compose.yml` 和 Testcontainers 都固定使用 `mysql:8.4.8`，不使用 `latest`。Flyway 迁移仍是数据库结构的唯一来源。
 
+## 2026-09-06 正式目标镜像验证
+
+MySQL 8.4.8 与 Redis 7.4.8 的官方 linux/amd64 镜像均已导入本机。Docker daemon 直接拉取仍报 EOF；本轮使用宿主机匿名 HTTPS 从 Docker Hub 官方注册表下载，校验 manifest/config/layers 的 SHA-256 及解压后 diff_id，转换 Docker archive 后导入，没有改变全局代理或镜像源。
+
+| 镜像 | 官方 linux/amd64 manifest SHA-256 | 本地 image/config SHA-256 |
+| --- | --- | --- |
+| mysql:8.4.8 | `4fc4bca5a26c5aa2246a92779d238bc2d34f0373e65dc083d7b635b02780dd3d` | `7791889374e752a470ed491c5c7684bf91d64c2472721539bef3a64f5276e074` |
+| redis:7.4.8 | `3a7a8bb1ea5c3a1d341c8631b23664b077448417e04f5d5803938a6d3a868797` | `7ceda270a3137de18c0b3aff75fa0002faa1c2a87e2b25e86978a1c3f20b3b78` |
+
+通过 archive 导入的本地 RepoDigests 可能为空；上表区分源 manifest 与本地 config ID，不把两者混为一个 digest。
+
+- MySQL Compose healthcheck、空库迁移和 HTTP 基线通过：1000 次请求得到 SUCCESS=100、SOLD_OUT=900、orders=100、stock=0。
+- MySQL 默认 Testcontainers 测试已在 8.4.8 上通过：活动查询 2 项、事务/并发 6 项；无需再用 9.2.0 替代这 8 项。
+- Redis Compose healthcheck 通过，实测 `redis_version=7.4.8`、`appendonly=yes`、`maxmemory-policy=noeviction`。
+- 新 Redis 组件和全套最终测试数、具体命令与原始报告见 [本轮验证记录](validation/2026-09-06-stage-2.md)。
+
+本机验证 Maven 命令使用 `-s ../work-notes/maven-settings.xml`，依赖缓存位于工作台 `.m2/repository`；项目本身不依赖此设置文件，其他环境可直接 `mvn verify`。
+
 ## 2026-09-05 验证快照
 
-由于拉取 `mysql:8.4.8` 时镜像仓库连接返回 `unexpected EOF`，该镜像当前未缓存在本机；因此尚不能宣称 Compose 健康检查、Flyway 空库迁移或默认 Testcontainers 测试已经在正式目标镜像上通过。
+当时由于拉取 `mysql:8.4.8` 时镜像仓库连接返回 `unexpected EOF`，该镜像尚未缓存在本机；因此该历史快照没有正式目标镜像验收结论。这一缺口已在上方 2026-09-06 记录中补齐。
 
 为继续验证应用行为，本轮临时使用本机 MySQL 9.2.0 的独立 `flashguard_test` 库作为外部测试数据库，实际结果如下：
 
@@ -57,7 +76,7 @@ mvn `
 
 ## 复现与报告要求
 
-- 正式验收需要镜像仓库恢复后成功取得 `mysql:8.4.8`，执行 `docker compose up -d --wait mysql` 和 `mvn clean verify`；
+- 新环境验收需取得 `mysql:8.4.8` 和 `redis:7.4.8`，执行 Compose 健康检查和 `mvn clean verify`；
 - 不得把 MySQL 9.2.0 回退结果写成 MySQL 8.4.8 验证结果；
 - 性能或基准报告必须补充实际 Docker Engine、容器 digest、CPU、内存、JVM 参数和产生结果的 Git commit；
 - 项目能够构建或参考项目 README 中存在性能数字，都不能单独证明本项目的性能。

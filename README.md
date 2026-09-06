@@ -1,6 +1,6 @@
 # FlashGuard
 
-FlashGuard 是一个面向秒杀场景的 MySQL 正确性基线。当前阶段用一个可运行、可测试的模块化单体证明三件事：库存不会被扣成负数、同一用户在同一活动中最多生成一张订单、业务拒绝与系统错误通过稳定的 HTTP 契约区分。
+FlashGuard 是一个面向秒杀场景的营销库存与订单项目。目前包含 MySQL 同步下单基线，以及阶段 2 的 Redis Lua 原子预占组件。数据库仍是最终订单事实；Redis 预占记录为 `PENDING`，不代表已经创建订单。
 
 ## 阶段 1 范围与非目标
 
@@ -14,7 +14,25 @@ FlashGuard 是一个面向秒杀场景的 MySQL 正确性基线。当前阶段�
 - MVC、业务单元、MySQL 集成与 1000 请求/100 库存并发测试；
 - 固定为 `mysql:8.4.8` 的 Docker Compose 配置和 PowerShell 7 基线脚本。
 
-当前明确不实现 Redis、RocketMQ、异步下单、定时补偿、分布式限流、缓存、支付、物流、购物车、用户中心、微服务拆分或熔断器。这些后续能力不得削弱本阶段已经定义的数据库不变量。
+HTTP 接口当前仍执行阶段 1 的同步 MySQL 链路。阶段 2 的 Redis 组件通过 Java 服务和真实 Redis 集成测试使用；阶段 3 再接入参加接口、durable reservation 和 RocketMQ。定时补偿、分布式限流、缓存等继续按方案书分阶段推进。
+
+## 阶段 2：Redis Lua 原子预占
+
+- 显式从 MySQL 可售库存快照预热，重复预热不会覆盖已扣减的 Redis 库存；
+- 一段 Lua 原子完成 requestId 幂等、userId 重复预检、库存检查与扣减、PENDING 记录；
+- 明确返回 `SUCCESS / SOLD_OUT / DUPLICATE / REPLAY`，并区分未预热、活动时间窗和请求身份冲突；
+- 按活动与 requestId 查询原预占记录；重放保持原 reservationId 和过期时间；
+- 同一活动的 key 共用 hash tag，保留 PENDING 和超时扫描索引；当前均不设置自动 TTL。
+
+仅启动 Redis 依赖（MySQL 基线启动命令不受影响）：
+
+```powershell
+docker compose --profile redis up -d --wait redis
+```
+
+Redis 镜像锁定为 `redis:7.4.8`。键结构、状态保留、Java 调用方式及测试命令见 [Redis 预占说明](docs/architecture/redis-reservation.md)，取舍见 [ADR 003](docs/adr/003-redis-lua-reservation.md)，实际验收状态见 [本轮验证记录](docs/validation/2026-09-06-stage-2.md)。
+
+当前没有把 Redis 预占结果写成订单，也没有自动补偿。不要在同一活动上混用 MySQL 直接下单和独立 Redis 预占实验，或删除在线预占 key 后重新预热。
 
 ## 架构
 
@@ -153,7 +171,7 @@ docker compose down
 
 ## 测试
 
-完整验证命令如下；默认由 Testcontainers 启动固定标签的 `mysql:8.4.8`：
+完整验证命令如下；默认由 Testcontainers 启动固定标签的 `mysql:8.4.8` 和 `redis:7.4.8`：
 
 ```powershell
 mvn clean verify
@@ -162,13 +180,19 @@ mvn clean verify
 只运行不依赖 Docker 的上下文、业务单元和 MVC 测试：
 
 ```powershell
-mvn '-Dtest=FlashGuardApplicationTest,ParticipationServiceTest,TimeRandomOrderNumberGeneratorTest,ActivityControllerTest,ParticipationControllerTest,OrderControllerTest' test
+mvn '-Dtest=FlashGuardApplicationTest,ParticipationServiceTest,TimeRandomOrderNumberGeneratorTest,ActivityControllerTest,ParticipationControllerTest,OrderControllerTest,ReservationWarmupServiceTest' test
 ```
 
 只运行两个真实 MySQL 测试类：
 
 ```powershell
 mvn '-Dtest=ActivityQueryServiceTest,ParticipationMySqlIntegrationTest' test
+```
+
+只运行阶段 2 的 Redis 预占与预热测试：
+
+```powershell
+mvn '-Dtest=RedisReservationStoreTest,ReservationWarmupServiceTest' test
 ```
 
 外部测试数据库的回退方式及本机观测结果见 [`docs/environment.md`](docs/environment.md)。本地 MySQL 9.2 回退不替代正式的 `mysql:8.4.8` 验收。
@@ -193,8 +217,8 @@ PASS SUCCESS=100 SOLD_OUT=900 orders=100 stock=0
 
 ## 当前限制
 
-- 截至 2026-09-05，本机 Docker Desktop 和 Engine 已恢复，但 `mysql:8.4.8` 拉取因镜像仓库连接 `unexpected EOF` 尚未完成，因此本文不宣称 Compose、Flyway 或 Testcontainers 已在该目标镜像上通过；
-- 数据库测试已使用独立的本机 MySQL 9.2.0 测试库回退验证，但 9.2.0 不是项目正式运行或验收目标；
+- 2026-09-06 已补齐 MySQL 8.4.8 的 Compose、Flyway、Testcontainers 和 HTTP 基线验证；本机 Docker daemon 拉取仍可能报 EOF，本轮通过宿主机下载并校验官方镜像后导入，来源与 digest 见环境文档；
+- Redis 7.4.8 已用于独立组件验证和 Compose 健康检查；正确性测试结果不代表可持续吞吐或生产容量；
 - 数据库迁移不包含业务种子数据，Quick Start 必须显式准备活动；
-- 当前下单是同步数据库事务基线，尚未覆盖跨服务、消息投递、缓存一致性或故障补偿；
+- 当前 HTTP 下单是同步数据库事务基线；Redis 组件已单独实现，但尚未接入消息投递、durable reservation 或故障补偿；
 - 默认密码、单节点 Compose 和基线脚本仅用于本地开发，未做生产安全与容量配置。
