@@ -32,3 +32,21 @@ server:
   error:
     include-message: never
     include-stacktrace: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+    prometheus:
+      enabled: true
+  metrics:
+    enable:
+      all: true
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} |%5p| [%thread] %X{traceId:-} %X{requestId:-} %X{reservationId:-} %X{messageKey:-} - %msg%n"

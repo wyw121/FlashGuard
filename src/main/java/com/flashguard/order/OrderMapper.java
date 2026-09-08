@@ -68,9 +68,35 @@ public interface OrderMapper {
     })
     Optional<OrderRecord> findByOrderNo(@Param("orderNo") String orderNo);
 
+    @Select("""
+        SELECT id, order_no, request_id, activity_id, user_id, status, created_at, updated_at
+        FROM orders
+        WHERE reservation_id = #{reservationId}
+        """)
+    @ConstructorArgs({
+        @Arg(column = "id", javaType = long.class, id = true),
+        @Arg(column = "order_no", javaType = String.class),
+        @Arg(column = "request_id", javaType = String.class),
+        @Arg(column = "activity_id", javaType = long.class),
+        @Arg(column = "user_id", javaType = long.class),
+        @Arg(column = "status", javaType = OrderStatus.class),
+        @Arg(column = "created_at", javaType = LocalDateTime.class),
+        @Arg(column = "updated_at", javaType = LocalDateTime.class)
+    })
+    Optional<OrderRecord> findByReservationId(@Param("reservationId") String reservationId);
+
     @Insert("""
         INSERT INTO orders(order_no, request_id, activity_id, user_id, status)
         VALUES (#{orderNo}, #{requestId}, #{activityId}, #{userId}, #{status})
-        """)
+    """)
     void insert(OrderRecord order);
+
+    @Insert("""
+        INSERT INTO orders(order_no, request_id, reservation_id, activity_id, user_id, status)
+        VALUES (#{order.orderNo}, #{order.requestId}, #{reservationId}, #{order.activityId}, #{order.userId}, #{order.status})
+        """)
+    void insertWithReservation(
+        @Param("order") OrderRecord order,
+        @Param("reservationId") String reservationId
+    );
 }

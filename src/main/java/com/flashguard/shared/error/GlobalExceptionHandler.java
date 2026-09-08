@@ -74,6 +74,7 @@ public class GlobalExceptionHandler {
             case ACTIVITY_NOT_FOUND, PARTICIPATION_NOT_FOUND, ORDER_NOT_FOUND -> HttpStatus.NOT_FOUND;
             case ACTIVITY_NOT_STARTED, ACTIVITY_ENDED, SOLD_OUT, DUPLICATE_PURCHASE ->
                 HttpStatus.CONFLICT;
+            case PENDING -> HttpStatus.ACCEPTED;
             case VALIDATION_ERROR -> HttpStatus.BAD_REQUEST;
             case METHOD_NOT_ALLOWED -> HttpStatus.METHOD_NOT_ALLOWED;
             case UNSUPPORTED_MEDIA_TYPE -> HttpStatus.UNSUPPORTED_MEDIA_TYPE;

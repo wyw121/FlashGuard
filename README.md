@@ -229,4 +229,5 @@ PASS SUCCESS=100 SOLD_OUT=900 orders=100 stock=0
 - Redis 7.4.8 已用于独立组件验证和 Compose 健康检查；正确性测试结果不代表可持续吞吐或生产容量；
 - 数据库迁移不包含业务种子数据，Quick Start 必须显式准备活动；
 - 当前 HTTP 下单是同步数据库事务基线；Redis 组件已单独实现，但尚未接入消息投递、durable reservation 或故障补偿；
+- 阶段 3 已完成基础设施准备：新增 `stock_reservation` 持久化表（V2 迁移）及 `com.flashguard.reservation` 持久化模型（`StockReservationStatus`、`StockReservationRecord`、`StockReservationMapper`、`StockReservationService`）；本轮未切换参与接口到 MQ 异步链路；
 - 默认密码、单节点 Compose 和基线脚本仅用于本地开发，未做生产安全与容量配置。

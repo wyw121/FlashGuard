@@ -3,6 +3,7 @@ package com.flashguard;
 import com.flashguard.activity.ActivityMapper;
 import com.flashguard.inventory.ActivityStockMapper;
 import com.flashguard.order.OrderMapper;
+import com.flashguard.reservation.StockReservationMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -22,6 +23,9 @@ class FlashGuardApplicationTest {
 
     @MockitoBean
     private OrderMapper orderMapper;
+
+    @MockitoBean
+    private StockReservationMapper stockReservationMapper;
 
     @Test
     void applicationContextLoads() {

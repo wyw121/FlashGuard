@@ -9,6 +9,7 @@ public enum BusinessCode {
     ACTIVITY_NOT_FOUND("Activity not found"),
     ACTIVITY_NOT_STARTED("Activity has not started"),
     ACTIVITY_ENDED("Activity has ended or is unavailable"),
+    PENDING("Reservation accepted and waiting for async confirmation"),
     SOLD_OUT("Stock is sold out"),
     DUPLICATE_PURCHASE("User already participated in this activity"),
     PARTICIPATION_NOT_FOUND("Participation result not found"),

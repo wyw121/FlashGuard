@@ -55,6 +55,18 @@ class ParticipationControllerTest {
     }
 
     @Test
+    void pendingReturnsAcceptedAndMarksPendingStatus() throws Exception {
+        when(service.participate(any())).thenReturn(outcome(BusinessCode.PENDING, "PENDING"));
+
+        mockMvc.perform(post("/api/v1/activities/1001/participations")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(validBody()))
+            .andExpect(status().isAccepted())
+            .andExpect(jsonPath("$.code").value("PENDING"))
+            .andExpect(jsonPath("$.data.status").value("PENDING"));
+    }
+
+    @Test
     void businessRejectionsUseTheirHttpContract() throws Exception {
         when(service.participate(any()))
             .thenThrow(new BusinessException(BusinessCode.SOLD_OUT));
@@ -160,11 +172,15 @@ class ParticipationControllerTest {
     }
 
     private ParticipationOutcome outcome(BusinessCode code) {
+        return outcome(code, "CONFIRMED");
+    }
+
+    private ParticipationOutcome outcome(BusinessCode code, String status) {
         return new ParticipationOutcome(
             code,
             "request-1",
             "01K4C1YJ000000000000000001",
-            "CONFIRMED"
+            status
         );
     }
 
