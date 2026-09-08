@@ -75,12 +75,13 @@ public class ReservationConsumerService {
         long startNanos = System.nanoTime();
         CorrelationContext.setReservationId(reservationId);
         CorrelationContext.setMessageKey(messageKey);
-        if (forceConsumerFailure.get()) {
-            throw new IllegalStateException("Consumer forced failure is enabled for stage-8 fault injection");
-        }
         LOGGER.info("Consume reservation start reservationId={} messageKey={}", reservationId, messageKey);
 
         try {
+            if (forceConsumerFailure.get()) {
+                throw new IllegalStateException("Consumer forced failure is enabled for stage-8 fault injection");
+            }
+
             StockReservationRecord reservation = reservationService.findByReservationIdForUpdate(reservationId)
                 .orElseThrow(() -> new IllegalArgumentException("Reservation not found: " + reservationId));
 
