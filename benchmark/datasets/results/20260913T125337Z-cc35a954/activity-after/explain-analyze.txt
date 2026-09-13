@@ -1,0 +1,2 @@
+-> Limit: 50 row(s)  (cost=1933 rows=50) (actual time=0.148..0.166 rows=50 loops=1)
+    -> Covering index lookup on historical_orders using ix_history_activity_status_created (activity_id=42, status='CONFIRMED') (reverse)  (cost=1933 rows=16562) (actual time=0.147..0.161 rows=50 loops=1)

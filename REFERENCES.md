@@ -42,15 +42,16 @@ FlashGuard is an independent implementation. The directories under `../reference
 
 - URL: https://github.com/apache/rocketmq-spring
 - License: Apache-2.0
-- Version selected for a later FlashGuard stage: `2.3.6`
+- Starter version examined during initial planning: `2.3.6`; not used in the final integration
 - Verification: Maven Central artifact metadata, checked 2026-09-04
 - Used for: official transaction-message and Spring Boot integration contracts
 - Copied code: none
 
 ## Independence rules
 
+Current implementation uses the official `rocketmq-client` and `rocketmq-tools` 5.3.2 APIs directly, with explicit Spring beans and transaction proxies (ADR 008). The test runtime also uses official `rocketmq-broker`/`rocketmq-namesrv` 5.3.2 artifacts. Exact JAR hashes and runtime environment are retained with the experiments; no reference implementation's throughput figures are reused.
+
 1. New behavior is specified by FlashGuard tests before implementation.
 2. Reference class names, package structure, SQL, Lua scripts, and performance claims are not copied.
 3. Any future direct reuse must be listed here with its license and exact source location before it enters the repository.
 4. Performance numbers in reference READMEs are untrusted context, not FlashGuard evidence.
-

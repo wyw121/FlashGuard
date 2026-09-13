@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,6 +28,9 @@ public class RedisReservationStore {
     );
     private static final DefaultRedisScript<List> RESERVE_SCRIPT = script(
         "redis/reserve_stock.lua"
+    );
+    private static final DefaultRedisScript<List> RELEASE_SCRIPT = script(
+        "redis/release_stock.lua"
     );
 
     private final StringRedisTemplate redis;
@@ -149,6 +153,81 @@ public class RedisReservationStore {
         return Optional.of(reservation);
     }
 
+    /** Releases only the exact Redis identity for which durable cancellation ownership was acquired. */
+    public boolean releaseExpected(PendingReservation expected) {
+        long activityId = Long.parseLong(expected.activityId());
+        requirePositiveId(activityId, "activityId");
+        List<?> response = execute(RELEASE_SCRIPT, keys(activityId), "RELEASE", expected.activityId(),
+            expected.requestId(), expected.reservationId(), expected.userId());
+        return switch (responseCode(response)) {
+            case "RELEASED", "ALREADY_RELEASED" -> true;
+            case "NOT_FOUND", "NOT_READY" -> false;
+            default -> throw new ReservationStateException("Cannot release mismatched or invalid Redis reservation");
+        };
+    }
+
+    public boolean releaseByRequestId(long activityId, String requestId) {
+        if (activityId <= 0 || requestId == null || requestId.isBlank()) {
+            throw new IllegalArgumentException("Invalid release identity");
+        }
+        List<?> response = execute(
+            RELEASE_SCRIPT,
+            keys(activityId),
+            "RELEASE",
+            Long.toString(activityId),
+            requestId
+        );
+        String code = responseCode(response);
+        return switch (code) {
+            case "RELEASED", "ALREADY_RELEASED" -> true;
+            case "NOT_FOUND", "NOT_READY" -> false;
+            case "STATE_ERROR" -> throw new ReservationStoreException(
+                "Cannot release redis reservation: " + code
+            );
+            default -> throw new ReservationStateException("Unexpected release result: " + code);
+        };
+    }
+
+    public long countPendingReservations(long activityId) {
+        requirePositiveId(activityId, "activityId");
+        String key = keyPrefix(activityId) + "pending";
+        return executeStorage(() -> {
+            Long size = redis.opsForZSet().size(key);
+            return size == null ? 0L : size;
+        }, "count pending redis reservations");
+    }
+
+    public List<PendingReservation> findExpiredReservations(long activityId, long cutoff, long offset, int limit) {
+        var requestIds = findExpiredRequestIds(activityId, cutoff, offset, limit);
+        java.util.ArrayList<PendingReservation> records = new java.util.ArrayList<>();
+        for (String requestId : requestIds) {
+            findByRequestId(activityId, requestId).ifPresent(records::add);
+        }
+        return records;
+    }
+
+    public List<String> findExpiredRequestIds(long activityId, long cutoff, long offset, int limit) {
+        requirePositiveId(activityId, "activityId");
+        if (offset < 0 || limit <= 0) throw new IllegalArgumentException("Invalid scan page");
+        var requestIds = executeStorage(() -> redis.opsForZSet().rangeByScore(
+            keyPrefix(activityId) + "pending", 0, cutoff, offset, limit), "scan expired redis reservations");
+        return requestIds == null ? List.of() : List.copyOf(requestIds);
+    }
+
+    public Long getAvailableStock(long activityId) {
+        requirePositiveId(activityId, "activityId");
+        String key = keyPrefix(activityId) + "stock";
+        Object value = executeStorage(() -> redis.opsForHash().get(key, "availableStock"), "read redis stock");
+        if (value == null) {
+            return null;
+        }
+        try {
+            return Long.parseLong(value.toString());
+        } catch (NumberFormatException exception) {
+            throw new ReservationStateException("Invalid redis availableStock value", exception);
+        }
+    }
+
     private List<?> execute(
         DefaultRedisScript<List> script,
         List<String> keys,
@@ -164,6 +243,14 @@ public class RedisReservationStore {
             throw exception;
         } catch (DataAccessException exception) {
             throw new ReservationStoreException("Redis script execution failed", exception);
+        }
+    }
+
+    private <T> T executeStorage(Supplier<T> supplier, String message) {
+        try {
+            return supplier.get();
+        } catch (DataAccessException exception) {
+            throw new ReservationStoreException(message, exception);
         }
     }
 
@@ -198,7 +285,8 @@ public class RedisReservationStore {
             prefix + "stock",
             prefix + "requests",
             prefix + "users",
-            prefix + "pending"
+            prefix + "pending",
+            prefix + "released"
         );
     }
 

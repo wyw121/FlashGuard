@@ -6,7 +6,7 @@ import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
 
-import com.flashguard.activity.ActivityQueryService;
+import com.flashguard.activity.ActivityMapper;
 import com.flashguard.activity.ActivityStatus;
 import com.flashguard.activity.ActivityView;
 import org.junit.jupiter.api.Test;
@@ -18,7 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class ReservationWarmupServiceTest {
 
     @Mock
-    private ActivityQueryService activityQueryService;
+    private ActivityMapper activityMapper;
 
     @Mock
     private RedisReservationStore store;
@@ -34,9 +34,9 @@ class ReservationWarmupServiceTest {
             100,
             73
         );
-        when(activityQueryService.findById(1001L)).thenReturn(snapshot);
+        when(activityMapper.findById(1001L)).thenReturn(java.util.Optional.of(snapshot));
         when(store.warmUp(snapshot)).thenReturn(WarmUpResult.INITIALIZED);
-        ReservationWarmupService service = new ReservationWarmupService(activityQueryService, store);
+        ReservationWarmupService service = new ReservationWarmupService(activityMapper, store);
 
         assertThat(service.warmUp(1001L)).isEqualTo(WarmUpResult.INITIALIZED);
         verify(store).warmUp(snapshot);

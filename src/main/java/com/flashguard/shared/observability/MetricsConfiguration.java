@@ -22,8 +22,8 @@ public class MetricsConfiguration {
 
     @PostConstruct
     public void registerCustomMetrics() {
-        Gauge.builder("flashguard_mq_backlog", reservationService, StockReservationService::countMqBacklog)
-            .description("Number of reservations waiting for async consumer confirmation")
+        Gauge.builder("flashguard_reservation_backlog", reservationService, StockReservationService::countMqBacklog)
+            .description("Durable reservations waiting for confirmation; this is not broker backlog")
             .register(meterRegistry);
     }
 }

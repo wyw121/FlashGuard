@@ -1,0 +1,2 @@
+-> Limit/Offset: 50/800000 row(s)  (cost=115650 rows=50) (actual time=848..848 rows=50 loops=1)
+    -> Covering index lookup on historical_orders using ix_history_status_created (status='CONFIRMED') (reverse)  (cost=115650 rows=991312) (actual time=0.233..776 rows=800050 loops=1)

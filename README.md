@@ -1,10 +1,12 @@
 # FlashGuard
 
-FlashGuard 是一个面向秒杀场景的营销库存与订单项目。目前包含 MySQL 同步下单基线，以及阶段 2 的 Redis Lua 原子预占组件。数据库仍是最终订单事实；Redis 预占记录为 `PENDING`，不代表已经创建订单。
+FlashGuard 是一个面向秒杀场景的营销库存与订单后端。目前包含 MySQL 同步基线、Redis Lua 预占、durable reservation、事务内幂等消费者，以及超时补偿、Redis 孤儿预占恢复和持久化对账。数据库是最终订单事实；`PENDING` 不代表订单完成。
+
+**当前进度（2026-09-13）：** 已实现真实 RocketMQ 事务生产、Broker 回查、消费重试/DLQ、超时补偿与对账，正在执行真实故障和 HTTP 压测验收。Caffeine + Redis 缓存、本地/全局 Lua 限流的组件测试已通过；三主节点 Cluster 的五轮单热点/分桶 A/B 已实际完成。最新数据见 [阶段 7 实验](docs/validation/2026-09-13/stage7-cluster-ab.md)，端到端复现方法见 [benchmark](benchmark/README.md)。历史 [阶段 5 记录](docs/validation/2026-09-13/stage5-implementation-and-validation.md) 保留当时的验收边界。
 
 ## 阶段 1 范围与非目标
 
-当前实现包含：
+阶段 1 基线包含（下方保留该阶段的运行说明）：
 
 - 查询活动详情及数据库实时库存；
 - 参加活动，并在同一事务内扣减库存、同步创建订单；
@@ -14,7 +16,7 @@ FlashGuard 是一个面向秒杀场景的营销库存与订单项目。目前包
 - MVC、业务单元、MySQL 集成与 1000 请求/100 库存并发测试；
 - 固定为 `mysql:8.4.8` 的 Docker Compose 配置和 PowerShell 7 基线脚本。
 
-HTTP 接口当前仍执行阶段 1 的同步 MySQL 链路。阶段 2 的 Redis 组件通过 Java 服务和真实 Redis 集成测试使用；阶段 3 再接入参加接口、durable reservation 和 RocketMQ。定时补偿、分布式限流、缓存等继续按方案书分阶段推进。
+HTTP 使用显式 `FLASHGUARD_PARTICIPATION_MODE=mysql|async`，默认保留同步 MySQL 基线。`async` 还需要 `FLASHGUARD_MQ_ENABLED=true`、可连接的 Broker 和已预热活动；Redis 未就绪/不可用返回 503。异步预占返回 `PENDING`，真实 MQ 消费事务完成后结果查询返回 `CONFIRMED`。活动详情使用缓存，补偿与对账直接使用数据库事实。
 
 ## 阶段 2：Redis Lua 原子预占
 
@@ -32,7 +34,7 @@ docker compose --profile redis up -d --wait redis
 
 Redis 镜像锁定为 `redis:7.4.8`。键结构、状态保留、Java 调用方式及测试命令见 [Redis 预占说明](docs/architecture/redis-reservation.md)，取舍见 [ADR 003](docs/adr/003-redis-lua-reservation.md)，实际验收状态见 [本轮验证记录](docs/validation/2026-09-06-stage-2.md)。
 
-当前没有把 Redis 预占结果写成订单，也没有自动补偿。不要在同一活动上混用 MySQL 直接下单和独立 Redis 预占实验，或删除在线预占 key 后重新预热。
+异步模式通过 MQ 创建订单，独立超时扫描处理补偿。对同一活动切换同步/异步模式前应停止新流量、排空消息并完成对账，使用新活动进行模式对照实验。
 
 ## 架构
 
@@ -40,11 +42,13 @@ Redis 镜像锁定为 `redis:7.4.8`。键结构、状态保留、Java 调用方�
 
 ```text
 HTTP
-  -> activity / participation / order Controller
-  -> 查询 Service 或 ParticipationService
-  -> ParticipationTransaction（事务边界）
-  -> MyBatis Mapper（显式 SQL）
-  -> MySQL（最终并发约束）
+  -> 校验 / Caffeine + Redis 活动缓存 / 活动与用户限流
+  -> ParticipationService（显式模式）
+     mysql -> ParticipationTransaction -> MySQL
+     async -> Redis Lua 预占 -> RocketMQ half message
+           -> 本地 MySQL durable reservation 事务 -> COMMIT
+           -> MQ Consumer -> MySQL 订单/库存/CONFIRMED 同一事务
+  -> 异常：Broker 回查 / retry / DLQ / 超时与孤儿扫描 / 对账
 ```
 
 - `activity`：活动与库存联合查询；
@@ -58,7 +62,7 @@ HTTP
 
 ## 参加活动的请求生命周期
 
-`POST /api/v1/activities/{activityId}/participations` 按以下顺序执行：
+`POST /api/v1/activities/{activityId}/participations` 在 `mysql` 基线模式按以下顺序执行；异步模式见 [事务消息设计](docs/adr/008-real-rocketmq-transaction-fence.md)：
 
 1. Bean Validation 校验正数 `userId`，以及非空且最长 64 字符的 `requestId`。
 2. 在事务中按 `requestId` 查询订单；已存在时不再扣库存，返回 HTTP 200 和 `REPLAY`。
@@ -179,7 +183,7 @@ docker compose down
 
 ## 测试
 
-完整验证命令如下；默认由 Testcontainers 启动固定标签的 `mysql:8.4.8` 和 `redis:7.4.8`：
+完整验证包含专属 `mysql:8.4.8`、`redis:7.4.8` 与真实 RocketMQ 5.3.2 测试环境。需要 Docker Desktop Linux engine、Java 17+、Maven；首次运行真实 MQ 场景可使用下文包装器，自动检查并构建隔离的 Broker Java 运行镜像。
 
 ```powershell
 mvn clean verify
@@ -205,6 +209,18 @@ mvn '-Dtest=RedisReservationStoreTest,ReservationWarmupServiceTest' test
 
 外部测试数据库的回退方式及本机观测结果见 [`docs/environment.md`](docs/environment.md)。本地 MySQL 9.2 回退不替代正式的 `mysql:8.4.8` 验收。
 
+## 真实故障复现
+
+六个[故障包装器与场景说明](docs/failure-cases/README.md)自建专属组件、随机 Topic/组和活动，不要求已运行应用或活动 1001。需要 Docker Desktop Linux engine、Java 17+、Maven、PowerShell 7，以及工作台 Maven 配置 `D:\code\flashguard-workbench\work-notes\maven-settings.xml`。例如：
+
+```powershell
+pwsh -NoProfile -File 'D:\code\flashguard-workbench\flashguard\scripts\failure-cases\inject-mysql-slow-or-down.ps1'
+```
+
+2026-09-13 保留的[真实 MQ 结果](docs/validation/2026-09-13/real-mq/results.json)为 11 项全部通过、0 失败/错误/跳过，约 357.7 秒。包括真实 Broker 回查、100 次消息投递幂等、专属 MySQL/Redis 暂停恢复、DLQ、Producer 两个明确边界退出、Consumer 业务事务前退出重投，以及 Broker 积压 20 → 0。Consumer 的退出点在调用 JDBC 业务事务之前，不是 JDBC commit 中途；该套件通过不代表全项目 verify 或性能容量验收完成。
+
+`flashguard_mq_backlog` 采样真实 Broker 偏移差，不可用为 -1；`flashguard_reservation_backlog` 只统计 DB 中 PENDING/MQ_COMMITTED 业务记录。两者分别观察，不能用 DB 预占归零代替 Broker 排空证据。
+
 ## 并发基线脚本
 
 先按“启动”一节运行 Compose MySQL 和应用，再在第二个 PowerShell 中执行：
@@ -228,6 +244,6 @@ PASS SUCCESS=100 SOLD_OUT=900 orders=100 stock=0
 - 2026-09-06 已补齐 MySQL 8.4.8 的 Compose、Flyway、Testcontainers 和 HTTP 基线验证；本机 Docker daemon 拉取仍可能报 EOF，本轮通过宿主机下载并校验官方镜像后导入，来源与 digest 见环境文档；
 - Redis 7.4.8 已用于独立组件验证和 Compose 健康检查；正确性测试结果不代表可持续吞吐或生产容量；
 - 数据库迁移不包含业务种子数据，Quick Start 必须显式准备活动；
-- 当前 HTTP 下单是同步数据库事务基线；Redis 组件已单独实现，但尚未接入消息投递、durable reservation 或故障补偿；
-- 阶段 3 已完成基础设施准备：新增 `stock_reservation` 持久化表（V2 迁移）及 `com.flashguard.reservation` 持久化模型（`StockReservationStatus`、`StockReservationRecord`、`StockReservationMapper`、`StockReservationService`）；本轮未切换参与接口到 MQ 异步链路；
+- 参与接口默认选择明确的 `mysql` 同步基线；启用 `async` 模式与真实 MQ 后走 Redis 预占、half message、本地 durable 事务、真实 Consumer 与补偿链路。异步依赖不可用时拒绝请求，不隐式回退到同步下单；
+- 真实 MQ 功能与指定故障场景已有上述实测；HTTP 压测、百万数据与 Cluster 实验各有独立协议和报告，不能用消息功能测试代替其验收；
 - 默认密码、单节点 Compose 和基线脚本仅用于本地开发，未做生产安全与容量配置。

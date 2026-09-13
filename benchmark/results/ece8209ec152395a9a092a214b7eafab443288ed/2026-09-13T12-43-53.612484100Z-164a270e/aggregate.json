@@ -1,0 +1,303 @@
+{
+  "runs": [
+    {
+      "scenario": "mysql-success",
+      "repetition": 1,
+      "activityId": 7001,
+      "initialStock": 150,
+      "targetRps": 10,
+      "seconds": 5,
+      "vus": 30,
+      "warmupExcluded": false,
+      "protocolShortfalls": [
+        "warmup below plan 60 seconds",
+        "steady duration below plan 180 seconds",
+        "fewer than plan 5 measured repetitions"
+      ],
+      "topic": "fg_perf_9fae6361c4884e36bb07b4e2c0504893",
+      "consumerGroup": "fg_perf_c_9fae6361c4884e36bb07b4e2c0504893",
+      "start": "2026-09-13T12:45:16.879516500Z",
+      "dataSeed": "activity=7001;users=1000000+iteration;replayModulo=50",
+      "mysqlSettings": {
+        "version": "8.4.8",
+        "bufferPoolBytes": 134217728,
+        "maxConnections": 151,
+        "transactionIsolation": "REPEATABLE-READ",
+        "flushLogAtCommit": 1
+      },
+      "brokerMessagesBefore": 0,
+      "k6ExitCode": 0,
+      "elapsedSeconds": 5.4822621,
+      "requests": 50,
+      "confirmedResponses": 50,
+      "businessRejections": 0,
+      "throttledRequests": 0,
+      "droppedIterations": 0,
+      "arrivalRps": 10.0,
+      "confirmedResponseRps": 10.0,
+      "admissionMs": {
+        "min": 65.674,
+        "med": 89.33279999999999,
+        "max": 531.7733,
+        "p(50)": 89.33279999999999,
+        "p(95)": 440.3051049999999,
+        "p(99)": 496.05367199999984
+      },
+      "confirmedE2eMs": {
+        "min": 67,
+        "med": 90.5,
+        "max": 542,
+        "p(50)": 90.5,
+        "p(95)": 443.4999999999999,
+        "p(99)": 502.30999999999983
+      },
+      "orders": 50,
+      "dbStock": 100,
+      "duplicateOrders": 0,
+      "nonterminalReservations": 0,
+      "confirmedReservations": 0,
+      "cancelledReservations": 0,
+      "settledElapsedSeconds": 5.6712064,
+      "committedOrderRps": 8.81646628131891,
+      "configuredWindowOrderRps": 10.0,
+      "redisStock": "N/A: synchronous MySQL path does not reserve Redis",
+      "resourceTelemetryComplete": true,
+      "failures": [],
+      "technicalStatus": "PASS",
+      "benchmarkStatus": "REVIEW",
+      "end": "2026-09-13T12:45:33.784175Z",
+      "orderResponseAccountingPassed": true,
+      "uniquenessPassed": true,
+      "systemErrorRateSource": "summary.metrics.system_error_rate.value",
+      "stockConservationPassed": true,
+      "systemErrorRate": 0.0,
+      "reservationsTerminalPassed": true,
+      "derivedMetricCorrection": {
+        "correctedAtUtc": "2026-09-13T13:14:03.5769037Z",
+        "reason": "Derived metadata correction only: k6 summary-export Rate uses value, not Counter rate. Raw JSON and summary unchanged. Original wait timings/throughput retained; historical convergence wait used response equality and may reflect response-accounting mismatch rather than stock loss.",
+        "previousSystemErrorRate": 0.0,
+        "correctedSystemErrorRate": 0.0,
+        "originalFailures": [],
+        "rawSha256": "0DF39A737BA60B9B18B70DF55E10E445276E77A3F2C025221867B970AED20521",
+        "summarySha256": "0913EDA9A1D6627E2755081CA4A046C8937BE8146955B470BEA380F19420B68C"
+      }
+    },
+    {
+      "scenario": "async-success",
+      "repetition": 1,
+      "activityId": 7002,
+      "initialStock": 150,
+      "targetRps": 10,
+      "seconds": 5,
+      "vus": 30,
+      "warmupExcluded": false,
+      "protocolShortfalls": [
+        "warmup below plan 60 seconds",
+        "steady duration below plan 180 seconds",
+        "fewer than plan 5 measured repetitions"
+      ],
+      "topic": "fg_perf_e61d6d5f2268447c8ef45f649ff983d4",
+      "consumerGroup": "fg_perf_c_e61d6d5f2268447c8ef45f649ff983d4",
+      "start": "2026-09-13T12:45:39.244819400Z",
+      "dataSeed": "activity=7002;users=1000000+iteration;replayModulo=50",
+      "mysqlSettings": {
+        "version": "8.4.8",
+        "bufferPoolBytes": 134217728,
+        "maxConnections": 151,
+        "transactionIsolation": "REPEATABLE-READ",
+        "flushLogAtCommit": 1
+      },
+      "brokerMessagesBefore": 0,
+      "k6ExitCode": 99,
+      "elapsedSeconds": 7.2644238,
+      "requests": 51,
+      "confirmedResponses": 41,
+      "businessRejections": 0,
+      "throttledRequests": 0,
+      "droppedIterations": 0,
+      "arrivalRps": 10.2,
+      "confirmedResponseRps": 8.2,
+      "admissionMs": {
+        "med": 690.1927,
+        "max": 3281.9712,
+        "p(50)": 690.1927,
+        "p(95)": 1472.5409,
+        "p(99)": 2792.2700999999997,
+        "min": 276.2292
+      },
+      "confirmedE2eMs": {
+        "min": 1263,
+        "med": 1862,
+        "max": 2366,
+        "p(50)": 1862,
+        "p(95)": 2208,
+        "p(99)": 2344.8
+      },
+      "orders": 48,
+      "dbStock": 102,
+      "duplicateOrders": 0,
+      "nonterminalReservations": 0,
+      "confirmedReservations": 48,
+      "cancelledReservations": 0,
+      "settledElapsedSeconds": 67.4036189,
+      "committedOrderRps": 0.7121279359082009,
+      "configuredWindowOrderRps": 9.6,
+      "redisStock": 99,
+      "brokerLag": 0,
+      "brokerCommittedMessages": 107,
+      "dlqMessages": 0,
+      "resourceTelemetryComplete": true,
+      "failures": [
+        "k6 threshold/system-error/dropped-iteration gate",
+        "DB/reservation/MQ did not converge within deadline: ConditionTimeoutException",
+        "Redis/DB/durable reservation invariant",
+        "broker committed-message/order count mismatch",
+        "all-success traffic rejected or incomplete",
+        "order/confirmed-response accounting mismatch; this is not itself a stock violation",
+        "nonzero system error rate from original k6 Rate.value"
+      ],
+      "technicalStatus": "FAIL",
+      "benchmarkStatus": "FAIL",
+      "end": "2026-09-13T12:46:52.603742700Z",
+      "orderResponseAccountingPassed": false,
+      "uniquenessPassed": true,
+      "systemErrorRateSource": "summary.metrics.system_error_rate.value",
+      "stockConservationPassed": true,
+      "systemErrorRate": 0.19607843137254902,
+      "reservationsTerminalPassed": true,
+      "derivedMetricCorrection": {
+        "correctedAtUtc": "2026-09-13T13:14:03.5358089Z",
+        "reason": "Derived metadata correction only: k6 summary-export Rate uses value, not Counter rate. Raw JSON and summary unchanged. Original wait timings/throughput retained; historical convergence wait used response equality and may reflect response-accounting mismatch rather than stock loss.",
+        "previousSystemErrorRate": 0.0,
+        "correctedSystemErrorRate": 0.19607843137254902,
+        "originalFailures": [
+          "k6 threshold/system-error/dropped-iteration gate",
+          "DB/reservation/MQ did not converge within deadline: ConditionTimeoutException",
+          "DB stock/order invariant",
+          "Redis/DB/durable reservation invariant",
+          "broker committed-message/order count mismatch",
+          "all-success traffic rejected or incomplete"
+        ],
+        "rawSha256": "B9D42BE05DF85CFB133173D937C4432415369F0D55158A4A42A268EA42B03865",
+        "summarySha256": "9B7CECE49827335A5A5235562DA8AFFB6DDE1E1443464426A9D752430DA245EC"
+      }
+    }
+  ],
+  "comparisons": {
+    "mysql-success": {
+      "runs": 1,
+      "status": "REVIEW",
+      "committedOrderRpsMin": 8.81646628131891,
+      "committedOrderRpsMedian": 8.81646628131891,
+      "committedOrderRpsMax": 8.81646628131891,
+      "arrivalRps": {
+        "min": 10.0,
+        "median": 10.0,
+        "max": 10.0
+      },
+      "confirmedResponseRps": {
+        "min": 10.0,
+        "median": 10.0,
+        "max": 10.0
+      },
+      "committedOrderRps": {
+        "min": 8.81646628131891,
+        "median": 8.81646628131891,
+        "max": 8.81646628131891
+      },
+      "admissionMs": {
+        "med": {
+          "min": 89.33279999999999,
+          "median": 89.33279999999999,
+          "max": 89.33279999999999
+        },
+        "p(95)": {
+          "min": 440.3051049999999,
+          "median": 440.3051049999999,
+          "max": 440.3051049999999
+        },
+        "p(99)": {
+          "min": 496.05367199999984,
+          "median": 496.05367199999984,
+          "max": 496.05367199999984
+        }
+      },
+      "confirmedE2eMs": {
+        "med": {
+          "min": 90.5,
+          "median": 90.5,
+          "max": 90.5
+        },
+        "p(95)": {
+          "min": 443.4999999999999,
+          "median": 443.4999999999999,
+          "max": 443.4999999999999
+        },
+        "p(99)": {
+          "min": 502.30999999999983,
+          "median": 502.30999999999983,
+          "max": 502.30999999999983
+        }
+      }
+    },
+    "async-success": {
+      "runs": 1,
+      "status": "FAIL",
+      "committedOrderRpsMin": 0.7121279359082009,
+      "committedOrderRpsMedian": 0.7121279359082009,
+      "committedOrderRpsMax": 0.7121279359082009,
+      "arrivalRps": {
+        "min": 10.2,
+        "median": 10.2,
+        "max": 10.2
+      },
+      "confirmedResponseRps": {
+        "min": 8.2,
+        "median": 8.2,
+        "max": 8.2
+      },
+      "committedOrderRps": {
+        "min": 0.7121279359082009,
+        "median": 0.7121279359082009,
+        "max": 0.7121279359082009
+      },
+      "admissionMs": {
+        "med": {
+          "min": 690.1927,
+          "median": 690.1927,
+          "max": 690.1927
+        },
+        "p(95)": {
+          "min": 1472.5409,
+          "median": 1472.5409,
+          "max": 1472.5409
+        },
+        "p(99)": {
+          "min": 2792.2700999999997,
+          "median": 2792.2700999999997,
+          "max": 2792.2700999999997
+        }
+      },
+      "confirmedE2eMs": {
+        "med": {
+          "min": 1862.0,
+          "median": 1862.0,
+          "max": 1862.0
+        },
+        "p(95)": {
+          "min": 2208.0,
+          "median": 2208.0,
+          "max": 2208.0
+        },
+        "p(99)": {
+          "min": 2344.8,
+          "median": 2344.8,
+          "max": 2344.8
+        }
+      }
+    }
+  },
+  "boundary": "Configured-rate evidence only; no maximum-capacity, million-request, million-row or Redis Cluster claim",
+  "overallStatus": "FAIL",
+  "derivedMetricCorrection": "Run records refreshed from corrected invariants.json; original raw/summary unchanged. See per-run derivedMetricCorrection for source hashes and prior values."
+}

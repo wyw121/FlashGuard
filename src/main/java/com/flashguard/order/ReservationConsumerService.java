@@ -134,10 +134,6 @@ public class ReservationConsumerService {
     }
 
     private OrderRecord consumeByCreateOrder(StockReservationRecord reservation, String messageKey) {
-        if (stockMapper.decrementIfAvailable(reservation.activityId()) != 1) {
-            throw new IllegalStateException("Stock is no longer available: " + reservation.activityId());
-        }
-
         OrderRecord order = buildOrder(reservation);
         try {
             orderMapper.insertWithReservation(order, reservation.reservationId());
@@ -148,6 +144,11 @@ public class ReservationConsumerService {
             return existingOrder;
         }
 
+        // Insert first so a duplicate order never consumes another unit of inventory.
+        // Both statements remain in consumeReservation's transaction: stock failure rolls back the insert.
+        if (stockMapper.decrementIfAvailable(reservation.activityId()) != 1) {
+            throw new IllegalStateException("Stock is no longer available: " + reservation.activityId());
+        }
         reservationService.markAsConfirmed(reservation.reservationId(), messageKey);
         return order;
     }

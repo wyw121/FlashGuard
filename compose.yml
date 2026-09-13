@@ -1,4 +1,42 @@
 services:
+  namesrv:
+    image: apache/rocketmq:5.3.2
+    profiles: [mq]
+    command: sh mqnamesrv
+    environment:
+      JAVA_OPT_EXT: '-Xms256m -Xmx256m -Xmn128m'
+    ports:
+      - '${FLASHGUARD_MQ_NAMESRV_PORT:-9876}:9876'
+    healthcheck:
+      test: ['CMD', 'bash', '-c', 'echo > /dev/tcp/127.0.0.1/9876']
+      interval: 3s
+      timeout: 2s
+      retries: 30
+  broker:
+    image: apache/rocketmq:5.3.2
+    profiles: [mq]
+    depends_on:
+      namesrv:
+        condition: service_healthy
+    environment:
+      JAVA_OPT_EXT: '-Xms512m -Xmx512m -Xmn256m'
+    command:
+      - sh
+      - -c
+      - |
+        cp /home/rocketmq/config/broker.conf /tmp/flashguard-broker.conf
+        printf '\nlistenPort=${FLASHGUARD_MQ_BROKER_PORT:-10911}\nbrokerIP1=${FLASHGUARD_MQ_BROKER_IP:-127.0.0.1}\n' >> /tmp/flashguard-broker.conf
+        exec sh mqbroker -n namesrv:9876 -c /tmp/flashguard-broker.conf
+    ports:
+      - '${FLASHGUARD_MQ_BROKER_PORT:-10911}:${FLASHGUARD_MQ_BROKER_PORT:-10911}'
+    volumes:
+      - ./config/rocketmq/broker.conf:/home/rocketmq/config/broker.conf:ro
+      - flashguard-mq-store:/home/rocketmq/store
+    healthcheck:
+      test: ['CMD', 'bash', '-c', 'echo > /dev/tcp/127.0.0.1/${FLASHGUARD_MQ_BROKER_PORT:-10911}']
+      interval: 3s
+      timeout: 2s
+      retries: 40
   mysql:
     image: mysql:8.4.8
     environment:
@@ -45,5 +83,6 @@ services:
       - flashguard-redis-data:/data
 
 volumes:
+  flashguard-mq-store:
   flashguard-mysql-data:
   flashguard-redis-data:

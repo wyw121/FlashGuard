@@ -1,0 +1,668 @@
+{
+  "runs" : [ {
+    "scenario" : "mysql-success",
+    "repetition" : 1,
+    "activityId" : 7002,
+    "initialStock" : 200,
+    "targetRps" : 10,
+    "seconds" : 10,
+    "vus" : 100,
+    "warmupExcluded" : false,
+    "protocolShortfalls" : [ "warmup below plan 60 seconds", "steady duration below plan 180 seconds", "fewer than plan 5 measured repetitions" ],
+    "topic" : "fg_perf_f760ed924d6e4cba92a270bddb361014",
+    "consumerGroup" : "fg_perf_c_f760ed924d6e4cba92a270bddb361014",
+    "start" : "2026-09-13T13:18:11.127701600Z",
+    "dataSeed" : "activity=7002;users=1000000+iteration;replayModulo=50",
+    "mysqlSettings" : {
+      "version" : "8.4.8",
+      "bufferPoolBytes" : 134217728,
+      "maxConnections" : 151,
+      "transactionIsolation" : "REPEATABLE-READ",
+      "flushLogAtCommit" : 1
+    },
+    "brokerMessagesBefore" : 0,
+    "k6ExitCode" : 0,
+    "elapsedSeconds" : 11.7502596,
+    "requests" : 101,
+    "confirmedResponses" : 101,
+    "businessRejections" : 0,
+    "throttledRequests" : 0,
+    "droppedIterations" : 0,
+    "systemErrorRate" : 0.0,
+    "systemErrorRateSource" : "summary.metrics.system_error_rate.value",
+    "arrivalRps" : 10.1,
+    "confirmedResponseRps" : 10.1,
+    "admissionMs" : {
+      "min" : 55.2461,
+      "med" : 91.7953,
+      "max" : 143.9335,
+      "p(50)" : 91.7953,
+      "p(95)" : 125.6176,
+      "p(99)" : 141.0562
+    },
+    "confirmedE2eMs" : {
+      "p(50)" : 94,
+      "p(95)" : 130,
+      "p(99)" : 144,
+      "min" : 58,
+      "med" : 94,
+      "max" : 147
+    },
+    "orders" : 101,
+    "dbStock" : 99,
+    "duplicateOrders" : 0,
+    "nonterminalReservations" : 0,
+    "confirmedReservations" : 0,
+    "cancelledReservations" : 0,
+    "settledElapsedSeconds" : 11.9295523,
+    "committedOrderRps" : 8.466369689330254,
+    "configuredWindowOrderRps" : 10.1,
+    "stockConservationPassed" : true,
+    "uniquenessPassed" : true,
+    "orderResponseAccountingPassed" : true,
+    "reservationsTerminalPassed" : true,
+    "redisStock" : "N/A: synchronous MySQL path does not reserve Redis",
+    "resourceTelemetryComplete" : true,
+    "reviewReasons" : [ "warmup below plan 60 seconds", "steady duration below plan 180 seconds", "fewer than plan 5 measured repetitions" ],
+    "failures" : [ ],
+    "technicalStatus" : "PASS",
+    "benchmarkStatus" : "REVIEW",
+    "end" : "2026-09-13T13:18:29.486007800Z"
+  }, {
+    "scenario" : "mysql-soldout",
+    "repetition" : 1,
+    "activityId" : 7004,
+    "initialStock" : 2,
+    "targetRps" : 10,
+    "seconds" : 10,
+    "vus" : 100,
+    "warmupExcluded" : false,
+    "protocolShortfalls" : [ "warmup below plan 60 seconds", "steady duration below plan 180 seconds", "fewer than plan 5 measured repetitions" ],
+    "topic" : "fg_perf_f760ed924d6e4cba92a270bddb361014",
+    "consumerGroup" : "fg_perf_c_f760ed924d6e4cba92a270bddb361014",
+    "start" : "2026-09-13T13:18:41.926855Z",
+    "dataSeed" : "activity=7004;users=1000000+iteration;replayModulo=50",
+    "mysqlSettings" : {
+      "version" : "8.4.8",
+      "bufferPoolBytes" : 134217728,
+      "maxConnections" : 151,
+      "transactionIsolation" : "REPEATABLE-READ",
+      "flushLogAtCommit" : 1
+    },
+    "brokerMessagesBefore" : 0,
+    "k6ExitCode" : 0,
+    "elapsedSeconds" : 11.7322725,
+    "requests" : 101,
+    "confirmedResponses" : 2,
+    "businessRejections" : 99,
+    "throttledRequests" : 0,
+    "droppedIterations" : 0,
+    "systemErrorRate" : 0.0,
+    "systemErrorRateSource" : "summary.metrics.system_error_rate.value",
+    "arrivalRps" : 10.1,
+    "confirmedResponseRps" : 0.2,
+    "admissionMs" : {
+      "med" : 57.4834,
+      "max" : 101.801,
+      "p(50)" : 57.4834,
+      "p(95)" : 78.0248,
+      "p(99)" : 92.8223,
+      "min" : 24.9911
+    },
+    "confirmedE2eMs" : {
+      "max" : 110,
+      "p(50)" : 102.5,
+      "p(95)" : 109.25,
+      "p(99)" : 109.85,
+      "min" : 95,
+      "med" : 102.5
+    },
+    "orders" : 2,
+    "dbStock" : 0,
+    "duplicateOrders" : 0,
+    "nonterminalReservations" : 0,
+    "confirmedReservations" : 0,
+    "cancelledReservations" : 0,
+    "settledElapsedSeconds" : 11.9054862,
+    "committedOrderRps" : 0.16798977936743145,
+    "configuredWindowOrderRps" : 0.2,
+    "stockConservationPassed" : true,
+    "uniquenessPassed" : true,
+    "orderResponseAccountingPassed" : true,
+    "reservationsTerminalPassed" : true,
+    "redisStock" : "N/A: synchronous MySQL path does not reserve Redis",
+    "resourceTelemetryComplete" : true,
+    "reviewReasons" : [ "warmup below plan 60 seconds", "steady duration below plan 180 seconds", "fewer than plan 5 measured repetitions" ],
+    "failures" : [ ],
+    "technicalStatus" : "PASS",
+    "benchmarkStatus" : "REVIEW",
+    "end" : "2026-09-13T13:19:00.349578400Z"
+  }, {
+    "scenario" : "mysql-replay",
+    "repetition" : 1,
+    "activityId" : 7006,
+    "initialStock" : 200,
+    "targetRps" : 10,
+    "seconds" : 10,
+    "vus" : 100,
+    "warmupExcluded" : false,
+    "protocolShortfalls" : [ "warmup below plan 60 seconds", "steady duration below plan 180 seconds", "fewer than plan 5 measured repetitions" ],
+    "topic" : "fg_perf_f760ed924d6e4cba92a270bddb361014",
+    "consumerGroup" : "fg_perf_c_f760ed924d6e4cba92a270bddb361014",
+    "start" : "2026-09-13T13:19:11.804572400Z",
+    "dataSeed" : "activity=7006;users=1000000+iteration;replayModulo=50",
+    "mysqlSettings" : {
+      "version" : "8.4.8",
+      "bufferPoolBytes" : 134217728,
+      "maxConnections" : 151,
+      "transactionIsolation" : "REPEATABLE-READ",
+      "flushLogAtCommit" : 1
+    },
+    "brokerMessagesBefore" : 0,
+    "k6ExitCode" : 0,
+    "elapsedSeconds" : 11.5543091,
+    "requests" : 101,
+    "confirmedResponses" : 101,
+    "businessRejections" : 0,
+    "throttledRequests" : 0,
+    "droppedIterations" : 0,
+    "systemErrorRate" : 0.0,
+    "systemErrorRateSource" : "summary.metrics.system_error_rate.value",
+    "arrivalRps" : 10.1,
+    "confirmedResponseRps" : 10.1,
+    "admissionMs" : {
+      "min" : 4.7406,
+      "med" : 40.6589,
+      "max" : 153.8481,
+      "p(50)" : 40.6589,
+      "p(95)" : 116.4486,
+      "p(99)" : 145.0596
+    },
+    "confirmedE2eMs" : {
+      "p(99)" : 148,
+      "min" : 13,
+      "med" : 53,
+      "max" : 156,
+      "p(50)" : 53,
+      "p(95)" : 119
+    },
+    "orders" : 50,
+    "dbStock" : 150,
+    "duplicateOrders" : 0,
+    "nonterminalReservations" : 0,
+    "confirmedReservations" : 0,
+    "cancelledReservations" : 0,
+    "settledElapsedSeconds" : 11.7189135,
+    "committedOrderRps" : 4.266607138963864,
+    "configuredWindowOrderRps" : 5.0,
+    "stockConservationPassed" : true,
+    "uniquenessPassed" : true,
+    "orderResponseAccountingPassed" : true,
+    "reservationsTerminalPassed" : true,
+    "redisStock" : "N/A: synchronous MySQL path does not reserve Redis",
+    "resourceTelemetryComplete" : true,
+    "reviewReasons" : [ "warmup below plan 60 seconds", "steady duration below plan 180 seconds", "fewer than plan 5 measured repetitions" ],
+    "failures" : [ ],
+    "technicalStatus" : "PASS",
+    "benchmarkStatus" : "REVIEW",
+    "end" : "2026-09-13T13:19:30.060663200Z"
+  } ],
+  "warmupsExcludedFromStatistics" : [ {
+    "scenario" : "mysql-success",
+    "repetition" : 0,
+    "activityId" : 7001,
+    "initialStock" : 150,
+    "targetRps" : 10,
+    "seconds" : 5,
+    "vus" : 100,
+    "warmupExcluded" : true,
+    "protocolShortfalls" : [ "warmup below plan 60 seconds", "steady duration below plan 180 seconds", "fewer than plan 5 measured repetitions" ],
+    "topic" : "fg_perf_f760ed924d6e4cba92a270bddb361014",
+    "consumerGroup" : "fg_perf_c_f760ed924d6e4cba92a270bddb361014",
+    "start" : "2026-09-13T13:17:50.990039600Z",
+    "dataSeed" : "activity=7001;users=1000000+iteration;replayModulo=50",
+    "mysqlSettings" : {
+      "version" : "8.4.8",
+      "bufferPoolBytes" : 134217728,
+      "maxConnections" : 151,
+      "transactionIsolation" : "REPEATABLE-READ",
+      "flushLogAtCommit" : 1
+    },
+    "brokerMessagesBefore" : 0,
+    "k6ExitCode" : 0,
+    "elapsedSeconds" : 5.5213733,
+    "requests" : 50,
+    "confirmedResponses" : 50,
+    "businessRejections" : 0,
+    "throttledRequests" : 0,
+    "droppedIterations" : 0,
+    "systemErrorRate" : 0.0,
+    "systemErrorRateSource" : "summary.metrics.system_error_rate.value",
+    "arrivalRps" : 10.0,
+    "confirmedResponseRps" : 10.0,
+    "admissionMs" : {
+      "min" : 75.4393,
+      "med" : 101.45255,
+      "max" : 1083.052,
+      "p(50)" : 101.45255,
+      "p(95)" : 762.51236,
+      "p(99)" : 992.9116489999996
+    },
+    "confirmedE2eMs" : {
+      "min" : 77,
+      "med" : 104.5,
+      "max" : 1091,
+      "p(50)" : 104.5,
+      "p(95)" : 765.0999999999999,
+      "p(99)" : 998.3899999999996
+    },
+    "orders" : 50,
+    "dbStock" : 100,
+    "duplicateOrders" : 0,
+    "nonterminalReservations" : 0,
+    "confirmedReservations" : 0,
+    "cancelledReservations" : 0,
+    "settledElapsedSeconds" : 5.7259483,
+    "committedOrderRps" : 8.732178039400042,
+    "configuredWindowOrderRps" : 10.0,
+    "stockConservationPassed" : true,
+    "uniquenessPassed" : true,
+    "orderResponseAccountingPassed" : true,
+    "reservationsTerminalPassed" : true,
+    "redisStock" : "N/A: synchronous MySQL path does not reserve Redis",
+    "resourceTelemetryComplete" : true,
+    "reviewReasons" : [ "warmup below plan 60 seconds", "steady duration below plan 180 seconds", "fewer than plan 5 measured repetitions" ],
+    "failures" : [ ],
+    "technicalStatus" : "PASS",
+    "benchmarkStatus" : "EXCLUDED_WARMUP",
+    "end" : "2026-09-13T13:18:11.016741Z"
+  }, {
+    "scenario" : "mysql-soldout",
+    "repetition" : 0,
+    "activityId" : 7003,
+    "initialStock" : 2,
+    "targetRps" : 10,
+    "seconds" : 5,
+    "vus" : 100,
+    "warmupExcluded" : true,
+    "protocolShortfalls" : [ "warmup below plan 60 seconds", "steady duration below plan 180 seconds", "fewer than plan 5 measured repetitions" ],
+    "topic" : "fg_perf_f760ed924d6e4cba92a270bddb361014",
+    "consumerGroup" : "fg_perf_c_f760ed924d6e4cba92a270bddb361014",
+    "start" : "2026-09-13T13:18:29.580412100Z",
+    "dataSeed" : "activity=7003;users=1000000+iteration;replayModulo=50",
+    "mysqlSettings" : {
+      "version" : "8.4.8",
+      "bufferPoolBytes" : 134217728,
+      "maxConnections" : 151,
+      "transactionIsolation" : "REPEATABLE-READ",
+      "flushLogAtCommit" : 1
+    },
+    "brokerMessagesBefore" : 0,
+    "k6ExitCode" : 0,
+    "elapsedSeconds" : 5.5904058,
+    "requests" : 51,
+    "confirmedResponses" : 2,
+    "businessRejections" : 49,
+    "throttledRequests" : 0,
+    "droppedIterations" : 0,
+    "systemErrorRate" : 0.0,
+    "systemErrorRateSource" : "summary.metrics.system_error_rate.value",
+    "arrivalRps" : 10.2,
+    "confirmedResponseRps" : 0.4,
+    "admissionMs" : {
+      "min" : 31.4449,
+      "med" : 53.1302,
+      "max" : 96.0928,
+      "p(50)" : 53.1302,
+      "p(95)" : 71.91015,
+      "p(99)" : 87.91415
+    },
+    "confirmedE2eMs" : {
+      "p(50)" : 77.5,
+      "p(95)" : 80.65,
+      "p(99)" : 80.93,
+      "min" : 74,
+      "med" : 77.5,
+      "max" : 81
+    },
+    "orders" : 2,
+    "dbStock" : 0,
+    "duplicateOrders" : 0,
+    "nonterminalReservations" : 0,
+    "confirmedReservations" : 0,
+    "cancelledReservations" : 0,
+    "settledElapsedSeconds" : 5.7459492,
+    "committedOrderRps" : 0.34807129864635766,
+    "configuredWindowOrderRps" : 0.4,
+    "stockConservationPassed" : true,
+    "uniquenessPassed" : true,
+    "orderResponseAccountingPassed" : true,
+    "reservationsTerminalPassed" : true,
+    "redisStock" : "N/A: synchronous MySQL path does not reserve Redis",
+    "resourceTelemetryComplete" : true,
+    "reviewReasons" : [ "warmup below plan 60 seconds", "steady duration below plan 180 seconds", "fewer than plan 5 measured repetitions" ],
+    "failures" : [ ],
+    "technicalStatus" : "PASS",
+    "benchmarkStatus" : "EXCLUDED_WARMUP",
+    "end" : "2026-09-13T13:18:41.862092200Z"
+  }, {
+    "scenario" : "mysql-replay",
+    "repetition" : 0,
+    "activityId" : 7005,
+    "initialStock" : 150,
+    "targetRps" : 10,
+    "seconds" : 5,
+    "vus" : 100,
+    "warmupExcluded" : true,
+    "protocolShortfalls" : [ "warmup below plan 60 seconds", "steady duration below plan 180 seconds", "fewer than plan 5 measured repetitions" ],
+    "topic" : "fg_perf_f760ed924d6e4cba92a270bddb361014",
+    "consumerGroup" : "fg_perf_c_f760ed924d6e4cba92a270bddb361014",
+    "start" : "2026-09-13T13:19:00.426313Z",
+    "dataSeed" : "activity=7005;users=1000000+iteration;replayModulo=50",
+    "mysqlSettings" : {
+      "version" : "8.4.8",
+      "bufferPoolBytes" : 134217728,
+      "maxConnections" : 151,
+      "transactionIsolation" : "REPEATABLE-READ",
+      "flushLogAtCommit" : 1
+    },
+    "brokerMessagesBefore" : 0,
+    "k6ExitCode" : 0,
+    "elapsedSeconds" : 5.5677566,
+    "requests" : 51,
+    "confirmedResponses" : 51,
+    "businessRejections" : 0,
+    "throttledRequests" : 0,
+    "droppedIterations" : 0,
+    "systemErrorRate" : 0.0,
+    "systemErrorRateSource" : "summary.metrics.system_error_rate.value",
+    "arrivalRps" : 10.2,
+    "confirmedResponseRps" : 10.2,
+    "admissionMs" : {
+      "min" : 22.8049,
+      "med" : 82.329,
+      "max" : 155.9113,
+      "p(50)" : 82.329,
+      "p(95)" : 111.41159999999999,
+      "p(99)" : 137.84755
+    },
+    "confirmedE2eMs" : {
+      "max" : 162,
+      "p(50)" : 84,
+      "p(95)" : 120.5,
+      "p(99)" : 145.5,
+      "min" : 25,
+      "med" : 84
+    },
+    "orders" : 50,
+    "dbStock" : 100,
+    "duplicateOrders" : 0,
+    "nonterminalReservations" : 0,
+    "confirmedReservations" : 0,
+    "cancelledReservations" : 0,
+    "settledElapsedSeconds" : 5.7264953,
+    "committedOrderRps" : 8.731343933871734,
+    "configuredWindowOrderRps" : 10.0,
+    "stockConservationPassed" : true,
+    "uniquenessPassed" : true,
+    "orderResponseAccountingPassed" : true,
+    "reservationsTerminalPassed" : true,
+    "redisStock" : "N/A: synchronous MySQL path does not reserve Redis",
+    "resourceTelemetryComplete" : true,
+    "reviewReasons" : [ "warmup below plan 60 seconds", "steady duration below plan 180 seconds", "fewer than plan 5 measured repetitions" ],
+    "failures" : [ ],
+    "technicalStatus" : "PASS",
+    "benchmarkStatus" : "EXCLUDED_WARMUP",
+    "end" : "2026-09-13T13:19:11.747758600Z"
+  }, {
+    "scenario" : "async-success",
+    "repetition" : 0,
+    "activityId" : 7007,
+    "initialStock" : 150,
+    "targetRps" : 10,
+    "seconds" : 5,
+    "vus" : 100,
+    "warmupExcluded" : true,
+    "protocolShortfalls" : [ "warmup below plan 60 seconds", "steady duration below plan 180 seconds", "fewer than plan 5 measured repetitions" ],
+    "topic" : "fg_perf_336485add161479894912915a812a31a",
+    "consumerGroup" : "fg_perf_c_336485add161479894912915a812a31a",
+    "start" : "2026-09-13T13:19:38.312269300Z",
+    "dataSeed" : "activity=7007;users=1000000+iteration;replayModulo=50",
+    "mysqlSettings" : {
+      "version" : "8.4.8",
+      "bufferPoolBytes" : 134217728,
+      "maxConnections" : 151,
+      "transactionIsolation" : "REPEATABLE-READ",
+      "flushLogAtCommit" : 1
+    },
+    "brokerMessagesBefore" : 0,
+    "k6ExitCode" : 99,
+    "elapsedSeconds" : 5.7033607,
+    "requests" : 51,
+    "confirmedResponses" : 49,
+    "businessRejections" : 0,
+    "throttledRequests" : 0,
+    "droppedIterations" : 0,
+    "systemErrorRate" : 0.0392156862745098,
+    "systemErrorRateSource" : "summary.metrics.system_error_rate.value",
+    "arrivalRps" : 10.2,
+    "confirmedResponseRps" : 9.8,
+    "admissionMs" : {
+      "min" : 127.6401,
+      "med" : 192.6378,
+      "max" : 692.6377,
+      "p(50)" : 192.6378,
+      "p(95)" : 499.54535,
+      "p(99)" : 649.8935
+    },
+    "confirmedE2eMs" : {
+      "p(95)" : 846.9999999999999,
+      "p(99)" : 1066.6799999999998,
+      "min" : 242,
+      "med" : 308,
+      "max" : 1095,
+      "p(50)" : 308
+    },
+    "orders" : 51,
+    "dbStock" : 99,
+    "duplicateOrders" : 0,
+    "nonterminalReservations" : 0,
+    "confirmedReservations" : 51,
+    "cancelledReservations" : 0,
+    "settledElapsedSeconds" : 10.688617,
+    "committedOrderRps" : 4.771431140249482,
+    "configuredWindowOrderRps" : 10.2,
+    "stockConservationPassed" : true,
+    "uniquenessPassed" : true,
+    "orderResponseAccountingPassed" : false,
+    "reservationsTerminalPassed" : true,
+    "redisStock" : 99,
+    "redisStockConservationPassed" : true,
+    "confirmedReservationOrderAlignmentPassed" : true,
+    "brokerLag" : 0,
+    "brokerCommittedMessages" : 51,
+    "brokerAdditionalMessages" : 0,
+    "brokerMessagesPerOrder" : 1.0,
+    "brokerAdditionalMessageAttribution" : "Offset delta only: may include at-least-once commits or late previous-run messages; not key-attributed duplicate count",
+    "dlqMessages" : 0,
+    "resourceTelemetryComplete" : true,
+    "reviewReasons" : [ "warmup below plan 60 seconds", "steady duration below plan 180 seconds", "fewer than plan 5 measured repetitions" ],
+    "failures" : [ "k6 threshold/system-error/dropped-iteration gate", "order/confirmed-response accounting mismatch; this is not itself a stock violation", "all-success traffic rejected or incomplete" ],
+    "technicalStatus" : "FAIL",
+    "benchmarkStatus" : "FAIL",
+    "end" : "2026-09-13T13:19:54.577167900Z"
+  } ],
+  "suiteCompleted" : false,
+  "comparisons" : {
+    "mysql-success" : {
+      "runs" : 1,
+      "status" : "REVIEW",
+      "committedOrderRpsMin" : 8.466369689330254,
+      "committedOrderRpsMedian" : 8.466369689330254,
+      "committedOrderRpsMax" : 8.466369689330254,
+      "arrivalRps" : {
+        "max" : 10.1,
+        "median" : 10.1,
+        "min" : 10.1
+      },
+      "confirmedResponseRps" : {
+        "max" : 10.1,
+        "median" : 10.1,
+        "min" : 10.1
+      },
+      "committedOrderRps" : {
+        "max" : 8.466369689330254,
+        "median" : 8.466369689330254,
+        "min" : 8.466369689330254
+      },
+      "admissionMs" : {
+        "med" : {
+          "max" : 91.7953,
+          "median" : 91.7953,
+          "min" : 91.7953
+        },
+        "p(95)" : {
+          "max" : 125.6176,
+          "median" : 125.6176,
+          "min" : 125.6176
+        },
+        "p(99)" : {
+          "max" : 141.0562,
+          "median" : 141.0562,
+          "min" : 141.0562
+        }
+      },
+      "confirmedE2eMs" : {
+        "med" : {
+          "max" : 94.0,
+          "median" : 94.0,
+          "min" : 94.0
+        },
+        "p(95)" : {
+          "max" : 130.0,
+          "median" : 130.0,
+          "min" : 130.0
+        },
+        "p(99)" : {
+          "max" : 144.0,
+          "median" : 144.0,
+          "min" : 144.0
+        }
+      }
+    },
+    "mysql-soldout" : {
+      "runs" : 1,
+      "status" : "REVIEW",
+      "committedOrderRpsMin" : 0.16798977936743145,
+      "committedOrderRpsMedian" : 0.16798977936743145,
+      "committedOrderRpsMax" : 0.16798977936743145,
+      "arrivalRps" : {
+        "max" : 10.1,
+        "median" : 10.1,
+        "min" : 10.1
+      },
+      "confirmedResponseRps" : {
+        "max" : 0.2,
+        "median" : 0.2,
+        "min" : 0.2
+      },
+      "committedOrderRps" : {
+        "max" : 0.16798977936743145,
+        "median" : 0.16798977936743145,
+        "min" : 0.16798977936743145
+      },
+      "admissionMs" : {
+        "med" : {
+          "max" : 57.4834,
+          "median" : 57.4834,
+          "min" : 57.4834
+        },
+        "p(95)" : {
+          "max" : 78.0248,
+          "median" : 78.0248,
+          "min" : 78.0248
+        },
+        "p(99)" : {
+          "max" : 92.8223,
+          "median" : 92.8223,
+          "min" : 92.8223
+        }
+      },
+      "confirmedE2eMs" : {
+        "med" : {
+          "max" : 102.5,
+          "median" : 102.5,
+          "min" : 102.5
+        },
+        "p(95)" : {
+          "max" : 109.25,
+          "median" : 109.25,
+          "min" : 109.25
+        },
+        "p(99)" : {
+          "max" : 109.85,
+          "median" : 109.85,
+          "min" : 109.85
+        }
+      }
+    },
+    "mysql-replay" : {
+      "runs" : 1,
+      "status" : "REVIEW",
+      "committedOrderRpsMin" : 4.266607138963864,
+      "committedOrderRpsMedian" : 4.266607138963864,
+      "committedOrderRpsMax" : 4.266607138963864,
+      "arrivalRps" : {
+        "max" : 10.1,
+        "median" : 10.1,
+        "min" : 10.1
+      },
+      "confirmedResponseRps" : {
+        "max" : 10.1,
+        "median" : 10.1,
+        "min" : 10.1
+      },
+      "committedOrderRps" : {
+        "max" : 4.266607138963864,
+        "median" : 4.266607138963864,
+        "min" : 4.266607138963864
+      },
+      "admissionMs" : {
+        "med" : {
+          "max" : 40.6589,
+          "median" : 40.6589,
+          "min" : 40.6589
+        },
+        "p(95)" : {
+          "max" : 116.4486,
+          "median" : 116.4486,
+          "min" : 116.4486
+        },
+        "p(99)" : {
+          "max" : 145.0596,
+          "median" : 145.0596,
+          "min" : 145.0596
+        }
+      },
+      "confirmedE2eMs" : {
+        "med" : {
+          "max" : 53.0,
+          "median" : 53.0,
+          "min" : 53.0
+        },
+        "p(95)" : {
+          "max" : 119.0,
+          "median" : 119.0,
+          "min" : 119.0
+        },
+        "p(99)" : {
+          "max" : 148.0,
+          "median" : 148.0,
+          "min" : 148.0
+        }
+      }
+    }
+  },
+  "overallStatus" : "FAIL",
+  "boundary" : "Configured-rate HTTP evidence with scheduled compensation/reconciliation disabled; not total production capacity, maximum capacity, million-request, million-row or Redis Cluster evidence"
+}

@@ -1,0 +1,105 @@
+{
+  "startedAt" : "2026-09-13T12:53:37.765432700Z",
+  "outcome" : "PASS",
+  "scope" : "fresh experiment-only historical_orders; no production index migration and no HTTP throughput claim",
+  "warmupRepetitions" : 5,
+  "measuredRepetitions" : 20,
+  "cacheState" : "warm-per-query after five full fetches; no cold-cache claim; shared host",
+  "measurements" : {
+    "user-before" : {
+      "querySha256" : "84cfd8eac6eecc07455bd5e66fbd732523c8830b27a513474f6ffc3690b3cc12",
+      "warmupMsExcluded" : [ 819.3222, 794.2974, 823.7201, 713.0985, 721.8081 ],
+      "rawMs" : [ 675.4744, 608.3853, 630.9747, 782.6967, 633.9895, 606.3421, 579.1508, 819.9572, 634.4767, 725.7399, 786.9082, 630.7405, 877.7835, 791.5276, 651.6741, 602.7069, 766.7927, 732.8984, 713.0138, 750.3087 ],
+      "medianMs" : 694.2440999999999,
+      "p95Ms" : 819.9572,
+      "minMs" : 579.1508,
+      "maxMs" : 877.7835,
+      "timingBoundary" : "JDBC execute plus full result fetch/materialization, excludes equality assertions and EXPLAIN ANALYZE",
+      "resultSha256" : "b5260722ea41c026280cceef01c9948c6b5b0641456dbeb4f4f94dd470d454c5"
+    },
+    "activity-before" : {
+      "querySha256" : "ceeae33c9513777ac89deb9db816d87b167b19c107d3936d6449ba5b9f23b431",
+      "warmupMsExcluded" : [ 55.5099, 60.6844, 47.6467, 54.4142, 59.324 ],
+      "rawMs" : [ 65.6272, 75.3394, 51.9427, 68.8071, 53.7969, 62.4096, 46.5662, 33.9085, 77.8679, 78.8024, 78.7965, 53.2599, 51.5546, 61.5661, 60.6272, 52.4602, 43.1699, 51.0656, 54.4751, 75.6976 ],
+      "medianMs" : 57.55115,
+      "p95Ms" : 78.7965,
+      "minMs" : 33.9085,
+      "maxMs" : 78.8024,
+      "timingBoundary" : "JDBC execute plus full result fetch/materialization, excludes equality assertions and EXPLAIN ANALYZE",
+      "resultSha256" : "945d29c1ea47f5fb5b9d08e683712fcc2810e514d519b677e18ee1476da27dfe"
+    },
+    "user-after" : {
+      "querySha256" : "84cfd8eac6eecc07455bd5e66fbd732523c8830b27a513474f6ffc3690b3cc12",
+      "warmupMsExcluded" : [ 4.1151, 4.095, 4.6302, 4.1901, 4.0106 ],
+      "rawMs" : [ 3.9988, 6.0142, 4.8452, 7.1193, 7.2654, 12.4244, 7.1276, 6.3186, 11.7084, 12.6172, 7.3541, 6.4449, 5.2956, 6.0364, 6.9795, 6.5874, 8.1748, 3.8043, 4.6484, 4.4127 ],
+      "medianMs" : 6.51615,
+      "p95Ms" : 12.4244,
+      "minMs" : 3.8043,
+      "maxMs" : 12.6172,
+      "timingBoundary" : "JDBC execute plus full result fetch/materialization, excludes equality assertions and EXPLAIN ANALYZE",
+      "resultSha256" : "b5260722ea41c026280cceef01c9948c6b5b0641456dbeb4f4f94dd470d454c5"
+    },
+    "activity-after" : {
+      "querySha256" : "ceeae33c9513777ac89deb9db816d87b167b19c107d3936d6449ba5b9f23b431",
+      "warmupMsExcluded" : [ 4.8692, 4.3411, 6.6428, 5.2365, 4.7717 ],
+      "rawMs" : [ 7.2101, 5.3865, 5.9121, 14.3316, 12.7765, 14.2672, 17.208, 7.8687, 12.9427, 6.6528, 5.3478, 5.1716, 7.863, 8.1384, 10.977, 6.1806, 7.0826, 6.1098, 6.9178, 5.5919 ],
+      "medianMs" : 7.14635,
+      "p95Ms" : 14.3316,
+      "minMs" : 5.1716,
+      "maxMs" : 17.208,
+      "timingBoundary" : "JDBC execute plus full result fetch/materialization, excludes equality assertions and EXPLAIN ANALYZE",
+      "resultSha256" : "945d29c1ea47f5fb5b9d08e683712fcc2810e514d519b677e18ee1476da27dfe"
+    },
+    "deep-offset" : {
+      "querySha256" : "233251ed16f838ea437a2db5906c00d18ca5e580df4f4950997a6c5248e5334e",
+      "warmupMsExcluded" : [ 815.7055, 786.7959, 715.9851, 738.0138, 780.6638 ],
+      "rawMs" : [ 786.2104, 791.2811, 846.8902, 857.1047, 834.8585, 798.6163, 623.8811, 894.566, 779.5058, 779.1274, 683.841, 704.8989, 828.6632, 733.5392, 724.6485, 604.0594, 580.2885, 646.9817, 744.7947, 706.3664 ],
+      "medianMs" : 761.96105,
+      "p95Ms" : 857.1047,
+      "minMs" : 580.2885,
+      "maxMs" : 894.566,
+      "timingBoundary" : "JDBC execute plus full result fetch/materialization, excludes equality assertions and EXPLAIN ANALYZE",
+      "resultSha256" : "1d489583ffeaee0ab3fb7ce9190bf8afa2aa762a588fe9a9019c725bf738cfb1"
+    },
+    "keyset" : {
+      "querySha256" : "ba233d78a5e5e4ee392116735d98ac6e82af111ac6782fd2c133b8da1b81b1d7",
+      "warmupMsExcluded" : [ 8.0112, 6.5408, 7.5697, 6.6728, 8.7298 ],
+      "rawMs" : [ 5.8599, 6.8771, 6.0249, 6.7059, 9.1854, 5.9982, 5.1136, 6.658, 8.1875, 8.5241, 7.6079, 6.7569, 7.4672, 7.2103, 7.56, 8.6815, 7.7744, 7.0205, 7.5506, 7.491 ],
+      "medianMs" : 7.33875,
+      "p95Ms" : 8.6815,
+      "minMs" : 5.1136,
+      "maxMs" : 9.1854,
+      "timingBoundary" : "JDBC execute plus full result fetch/materialization, excludes equality assertions and EXPLAIN ANALYZE",
+      "resultSha256" : "1d489583ffeaee0ab3fb7ce9190bf8afa2aa762a588fe9a9019c725bf738cfb1"
+    }
+  },
+  "datasetRows" : 1000000,
+  "datasetSha256" : "f7aa6fa9800c8d16d1930f459fd7f2a0bd15a3b5b7c7abc4c696b4f96562b3fb",
+  "equivalence" : {
+    "offsetKeysetWindow" : true,
+    "userBeforeAfter" : true,
+    "activityBeforeAfter" : true
+  },
+  "comparisons" : {
+    "user" : {
+      "candidate" : "user-after",
+      "baseline" : "user-before",
+      "p95BaselineOverCandidate" : 65.99571810308747,
+      "medianBaselineOverCandidate" : 106.5420685527497
+    },
+    "activity" : {
+      "candidate" : "activity-after",
+      "baseline" : "activity-before",
+      "p95BaselineOverCandidate" : 5.498095118479443,
+      "medianBaselineOverCandidate" : 8.053222973965731
+    },
+    "pagination" : {
+      "candidate" : "keyset",
+      "baseline" : "deep-offset",
+      "p95BaselineOverCandidate" : 98.7277198640788,
+      "medianBaselineOverCandidate" : 103.82708908192812
+    }
+  },
+  "conclusionBoundary" : "PASS means one million deterministic rows and identical result windows verified with complete raw timings/plans; speedup is an observation, never a hardcoded pass threshold",
+  "completedAt" : "2026-09-13T12:57:02.492833700Z"
+}

@@ -57,6 +57,7 @@ class ReservationConsumerServiceTest {
             stockMapper,
             orderMapper,
             orderNumberGenerator,
+            new io.micrometer.core.instrument.simple.SimpleMeterRegistry(),
             NOW
         );
     }
@@ -74,7 +75,7 @@ class ReservationConsumerServiceTest {
         service.consumeReservation("res-1001", "msg-1");
 
         ArgumentCaptor<OrderRecord> order = ArgumentCaptor.forClass(OrderRecord.class);
-        verify(orderMapper).insertWithReservation(order.capture(), "res-1001");
+        verify(orderMapper).insertWithReservation(order.capture(), org.mockito.ArgumentMatchers.eq("res-1001"));
         verify(reservationService).markAsMqCommitted("res-1001", "msg-1");
         verify(reservationService).markAsConfirmed("res-1001", "msg-1");
         assertThat(order.getValue().requestId()).isEqualTo("request-1");
@@ -115,19 +116,18 @@ class ReservationConsumerServiceTest {
         StockReservationRecord reservation = pendingReservation();
         when(reservationService.findByReservationIdForUpdate("res-1001")).thenReturn(Optional.of(reservation));
         when(reservationService.markAsMqCommitted("res-1001", "msg-1")).thenReturn(1);
-        when(orderMapper.findByReservationId("res-1001")).thenReturn(Optional.empty());
-        when(stockMapper.decrementIfAvailable(1001L)).thenReturn(1);
         when(orderNumberGenerator.next()).thenReturn("01K4C1YJ0000000000000000OD");
         doThrow(new DuplicateKeyException("duplicate"))
             .when(orderMapper)
             .insertWithReservation(any(OrderRecord.class), anyString());
-        when(orderMapper.findByReservationId("res-1001")).thenReturn(Optional.of(
+        when(orderMapper.findByReservationId("res-1001")).thenReturn(Optional.empty(), Optional.of(
             confirmedOrder("order-existing", "request-1", 1001L, 2001L)
         ));
 
         OrderRecord result = service.consumeReservation("res-1001", "msg-1");
 
         assertThat(result.orderNo()).isEqualTo("order-existing");
+        verify(stockMapper, never()).decrementIfAvailable(1001L);
         verify(reservationService).markAsConfirmed("res-1001", "msg-1");
     }
 

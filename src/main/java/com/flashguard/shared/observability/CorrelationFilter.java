@@ -1,7 +1,6 @@
 package com.flashguard.shared.observability;
 
 import java.io.IOException;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -49,7 +48,7 @@ public class CorrelationFilter extends OncePerRequestFilter {
             .filter(StringUtils::hasText)
             .orElseGet(() -> {
                 String queryValue = request.getParameter(headerName);
-                return Objects.requireNonNullElse(queryValue, request.getParameter("requestId"));
+                return queryValue != null ? queryValue : request.getParameter("requestId");
             });
     }
 }

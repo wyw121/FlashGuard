@@ -49,6 +49,14 @@ end
 if ARGV[6] ~= 'RESERVE' and ARGV[6] ~= 'FIND' then
     return state_error('invalid operation')
 end
+local released_type = key_type(KEYS[5])
+if released_type ~= 'none' and released_type ~= 'hash' then
+    return state_error('wrong released key type')
+end
+if redis.call('HEXISTS', KEYS[5], ARGV[3]) == 1 then
+    if ARGV[6] == 'FIND' then return {'NOT_FOUND'} end
+    return {'REQUEST_CONFLICT'}
+end
 
 local stock_type = key_type(KEYS[1])
 local requests_type = key_type(KEYS[2])

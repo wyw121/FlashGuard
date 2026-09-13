@@ -15,6 +15,7 @@ public abstract class MySqlContainerSupport {
 
     @DynamicPropertySource
     static void registerDatabaseProperties(DynamicPropertyRegistry registry) {
+        registry.add("flashguard.scheduling.enabled", () -> false);
         if (EXTERNAL_URL != null && !EXTERNAL_URL.isBlank()) {
             registry.add("spring.datasource.url", MySqlContainerSupport::externalJdbcUrl);
             registry.add("spring.datasource.username", () -> EXTERNAL_USERNAME);

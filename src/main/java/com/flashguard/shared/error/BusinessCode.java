@@ -14,6 +14,8 @@ public enum BusinessCode {
     DUPLICATE_PURCHASE("User already participated in this activity"),
     PARTICIPATION_NOT_FOUND("Participation result not found"),
     ORDER_NOT_FOUND("Order not found"),
+    THROTTLED("Request frequency is too high"),
+    SERVICE_UNAVAILABLE("Service is temporarily unavailable"),
     INTERNAL_ERROR("Internal server error");
 
     private final String defaultMessage;

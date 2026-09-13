@@ -1,0 +1,55 @@
+{
+  "tests": 11,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "seconds": 357.699,
+  "cases": [
+    {
+      "name": "pausedOwnedMysqlCausesBrokerRetryThenRecovers",
+      "seconds": 42.508
+    },
+    {
+      "name": "brokerCheckFencesMissingExpiredTransactionAndReleasesRedis",
+      "seconds": 10.3
+    },
+    {
+      "name": "normalPublishReachesConfirmedThroughBroker",
+      "seconds": 2.356
+    },
+    {
+      "name": "persistentConsumerFailureReachesRealDlqThenTimeoutCompensates",
+      "seconds": 23.954
+    },
+    {
+      "name": "pausedOwnedRedisFailsClosedWithoutDurableOrder",
+      "seconds": 5.7
+    },
+    {
+      "name": "producerProcessHaltBeforeLocalTransactionRollsBack",
+      "seconds": 35.034
+    },
+    {
+      "name": "brokerCheckCommitsAfterLocalCommitReturnedUnknown",
+      "seconds": 3.117
+    },
+    {
+      "name": "oneHundredActualBrokerMessagesCreateOneOrderAndDebit",
+      "seconds": 7.105
+    },
+    {
+      "name": "stoppedConsumerRestartsAndDrainsBrokerBacklog",
+      "seconds": 29.632
+    },
+    {
+      "name": "producerProcessHaltAfterLocalCommitRecovers",
+      "seconds": 37.713
+    },
+    {
+      "name": "consumerProcessHaltBeforeCommitRedelivers",
+      "seconds": 52.027
+    }
+  ],
+  "log": "work-notes/mq-and-http-preflight-retry.log",
+  "runtime": "RocketMQ5.3.2 official Maven artifacts; isolated Linux container Java17.0.20.1; host appJava21.0.9"
+}

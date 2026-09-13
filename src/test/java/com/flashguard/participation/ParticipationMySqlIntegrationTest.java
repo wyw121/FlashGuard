@@ -35,8 +35,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
-@SpringBootTest
+@SpringBootTest(properties = "flashguard.ratelimit.enabled=false")
 class ParticipationMySqlIntegrationTest extends MySqlContainerSupport {
+    // This suite exercises the MySQL fallback transaction; Redis has its own real-container suite.
+    @org.springframework.test.context.bean.override.mockito.MockitoBean
+    private com.flashguard.reservation.RedisReservationStore reservationStore;
 
     private static final long ACTIVITY_ID = 1001L;
 
@@ -54,7 +57,12 @@ class ParticipationMySqlIntegrationTest extends MySqlContainerSupport {
 
     @BeforeEach
     void resetDatabase() {
+        org.mockito.Mockito.when(reservationStore.reserve(org.mockito.ArgumentMatchers.anyLong(),
+            org.mockito.ArgumentMatchers.anyLong(), org.mockito.ArgumentMatchers.anyString()))
+            .thenReturn(com.flashguard.reservation.ReservationResult.withoutReservation(
+                com.flashguard.reservation.ReservationDecision.NOT_READY));
         jdbcTemplate.update("DELETE FROM orders");
+        jdbcTemplate.update("DELETE FROM stock_reservation");
         jdbcTemplate.update("DELETE FROM activity_stock");
         jdbcTemplate.update("DELETE FROM activity");
     }

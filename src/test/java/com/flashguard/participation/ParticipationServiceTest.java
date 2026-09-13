@@ -68,6 +68,7 @@ class ParticipationServiceTest {
     @Mock
     private StockReservationService stockReservationService;
 
+    @Mock private com.flashguard.mq.ReservationMessagePublisher publisher;
     private ParticipationTransaction transactionUnderTest;
     private ParticipationService service;
 
@@ -84,7 +85,8 @@ class ParticipationServiceTest {
             transaction,
             orderMapper,
             reservationStore,
-            stockReservationService
+            stockReservationService,
+            org.mockito.Mockito.mock(ParticipationRateLimiter.class), publisher, "async"
         );
     }
 
@@ -95,8 +97,7 @@ class ParticipationServiceTest {
         when(orderMapper.findByRequestId("request-1")).thenReturn(Optional.empty());
         when(reservationStore.reserve(1001L, 2001L, "request-1"))
             .thenReturn(new ReservationResult(ReservationDecision.SUCCESS, pending));
-        when(stockReservationService.findByRequestId("request-1")).thenReturn(Optional.empty());
-        when(stockReservationService.createPending(pending)).thenReturn(persisted);
+        when(publisher.publish(pending)).thenReturn(persisted);
 
         ParticipationOutcome outcome = service.participate(COMMAND);
 
@@ -105,8 +106,7 @@ class ParticipationServiceTest {
         assertThat(outcome.orderNo()).isNull();
         assertThat(outcome.status()).isEqualTo("PENDING");
         verify(reservationStore).reserve(1001L, 2001L, "request-1");
-        verify(stockReservationService).findByRequestId("request-1");
-        verify(stockReservationService).createPending(pending);
+        verify(publisher).publish(pending);
     }
 
     @Test
@@ -115,14 +115,13 @@ class ParticipationServiceTest {
         when(orderMapper.findByRequestId("request-1")).thenReturn(Optional.empty());
         when(reservationStore.reserve(1001L, 2001L, "request-1"))
             .thenReturn(new ReservationResult(ReservationDecision.REPLAY, pending));
-        when(stockReservationService.findByRequestId("request-1"))
-            .thenReturn(Optional.of(persistedReservation(pending)));
+        when(publisher.publish(pending)).thenReturn(persistedReservation(pending));
 
         ParticipationOutcome outcome = service.participate(COMMAND);
 
         assertThat(outcome.code()).isEqualTo(BusinessCode.PENDING);
         assertThat(outcome.status()).isEqualTo("PENDING");
-        verify(stockReservationService).findByRequestId("request-1");
+        verify(publisher).publish(pending);
         verify(stockReservationService, never()).createPending(pending);
     }
 
@@ -137,27 +136,25 @@ class ParticipationServiceTest {
             BusinessCode.DUPLICATE_PURCHASE
         );
 
-        verify(stockReservationService, never()).findByRequestId("request-1");
+        verify(stockReservationService).findByRequestId("request-1");
         verify(transaction, never()).execute(COMMAND);
     }
 
     @Test
-    void notReadyFallsBackToLegacyAndPreservesSuccessfulOutcome() {
+    void notReadyFailsClosedWithoutLegacyFallback() {
         when(orderMapper.findByRequestId("request-1")).thenReturn(Optional.empty());
         when(reservationStore.reserve(1001L, 2001L, "request-1"))
             .thenReturn(ReservationResult.withoutReservation(ReservationDecision.NOT_READY));
-
-        when(transaction.execute(COMMAND)).thenReturn(ParticipationOutcome.success(confirmedOrder("order-existing", "request-1", 2001L)));
-
-        ParticipationOutcome outcome = service.participate(COMMAND);
-
-        assertThat(outcome).isEqualTo(new ParticipationOutcome(
-            BusinessCode.SUCCESS,
-            "request-1",
-            "order-existing",
-            "CONFIRMED"
-        ));
-        verify(transaction).execute(COMMAND);
+        assertBusinessCode(() -> service.participate(COMMAND), BusinessCode.SERVICE_UNAVAILABLE);
+        verify(transaction, never()).execute(COMMAND);
+    }
+    @Test
+    void redisFailureFailsClosedWithoutLegacyFallback() {
+        when(orderMapper.findByRequestId("request-1")).thenReturn(Optional.empty());
+        when(reservationStore.reserve(1001L, 2001L, "request-1"))
+            .thenThrow(new com.flashguard.reservation.ReservationStoreException("unavailable"));
+        assertBusinessCode(() -> service.participate(COMMAND), BusinessCode.SERVICE_UNAVAILABLE);
+        verify(transaction, never()).execute(COMMAND);
     }
 
     @Test
@@ -247,8 +244,7 @@ class ParticipationServiceTest {
 
     @Test
     void duplicateRequestAfterRollbackIsMappedToReplay() {
-        when(reservationStore.reserve(1001L, 2001L, "request-1"))
-            .thenReturn(ReservationResult.withoutReservation(ReservationDecision.NOT_READY));
+        service = new ParticipationService(transaction, orderMapper, reservationStore, stockReservationService, org.mockito.Mockito.mock(ParticipationRateLimiter.class));
         when(transaction.execute(COMMAND)).thenThrow(new DuplicateKeyException("duplicate"));
         when(orderMapper.findByRequestId("request-1"))
             .thenReturn(Optional.empty(), Optional.of(confirmedOrder("order-existing", "request-1", 2001L)));
@@ -262,8 +258,7 @@ class ParticipationServiceTest {
 
     @Test
     void duplicatePurchaseAfterRollbackUsesStableBusinessCode() {
-        when(reservationStore.reserve(1001L, 2001L, "request-1"))
-            .thenReturn(ReservationResult.withoutReservation(ReservationDecision.NOT_READY));
+        service = new ParticipationService(transaction, orderMapper, reservationStore, stockReservationService, org.mockito.Mockito.mock(ParticipationRateLimiter.class));
         when(transaction.execute(COMMAND)).thenThrow(new DuplicateKeyException("duplicate"));
         when(orderMapper.findByRequestId("request-1")).thenReturn(Optional.empty());
         when(orderMapper.findByActivityAndUser(1001L, 2001L))
@@ -288,6 +283,57 @@ class ParticipationServiceTest {
         assertThat(outcome.status()).isEqualTo("PENDING");
     }
 
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.CsvSource({"1002,2001", "1001,2002"})
+    void orderRequestIdentityConflictIsRejectedBeforeRedis(long activity, long user) {
+        var existing = confirmedOrder("order-existing", "request-1", 2001L);
+        when(orderMapper.findByRequestId("request-1")).thenReturn(Optional.of(existing));
+        assertBusinessCode(() -> service.participate(new ParticipationCommand(activity,user,"request-1")),
+            BusinessCode.DUPLICATE_PURCHASE);
+        org.mockito.Mockito.verifyNoInteractions(reservationStore, publisher, transaction);
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.CsvSource({"1002,2001", "1001,2002"})
+    void durableRequestIdentityConflictIsRejectedBeforeRedis(long activity, long user) {
+        when(stockReservationService.findByRequestId("request-1"))
+            .thenReturn(Optional.of(persistedReservation(reservation("SUCCESS", 0, 60000))));
+        assertBusinessCode(() -> service.participate(new ParticipationCommand(activity,user,"request-1")),
+            BusinessCode.DUPLICATE_PURCHASE);
+        org.mockito.Mockito.verifyNoInteractions(reservationStore, publisher, transaction);
+    }
+
+    @Test
+    void matchingDurableRequestStillUsesPublisherAfterRedisReplay() {
+        var pending = reservation("SUCCESS", 0, 60000);
+        var row = persistedReservation(pending);
+        when(stockReservationService.findByRequestId("request-1")).thenReturn(Optional.of(row));
+        when(reservationStore.reserve(1001L,2001L,"request-1"))
+            .thenReturn(new ReservationResult(ReservationDecision.REPLAY,pending));
+        when(publisher.publish(pending)).thenReturn(row);
+        assertThat(service.participate(COMMAND).code()).isEqualTo(BusinessCode.PENDING);
+        verify(publisher).publish(pending);
+    }
+    @Test
+    void concurrentConflictingOrderIsNotReturnedFromLegacyDuplicateRecovery() {
+        service = new ParticipationService(transaction, orderMapper, reservationStore, stockReservationService,
+            org.mockito.Mockito.mock(ParticipationRateLimiter.class));
+        when(orderMapper.findByRequestId("request-1")).thenReturn(Optional.empty(),
+            Optional.of(confirmedOrder("other-order", "request-1", 9999L)));
+        when(transaction.execute(COMMAND)).thenThrow(new DuplicateKeyException("concurrent insert"));
+        assertBusinessCode(() -> service.participate(COMMAND), BusinessCode.DUPLICATE_PURCHASE);
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.CsvSource({"1002,2001", "1001,2002"})
+    void legacyTransactionRejectsConcurrentConflictingReplay(long activity,long user) {
+        when(orderMapper.findByRequestId("request-1"))
+            .thenReturn(Optional.of(confirmedOrder("other-order", "request-1", 2001L)));
+        assertBusinessCode(() -> transactionUnderTest.execute(new ParticipationCommand(activity,user,"request-1")),
+            BusinessCode.DUPLICATE_PURCHASE);
+        org.mockito.Mockito.verifyNoInteractions(stockMapper, activityMapper, orderNumberGenerator);
+    }
+
     private void stubActiveActivity() {
         when(orderMapper.findByRequestId("request-1")).thenReturn(Optional.empty());
         when(activityMapper.findById(1001L)).thenReturn(Optional.of(activity(
@@ -295,6 +341,53 @@ class ParticipationServiceTest {
             LocalDateTime.of(2026, 9, 5, 5, 0),
             ActivityStatus.ACTIVE
         )));
+    }
+
+    @Test
+    void fastConsumerConfirmationReturnsCompleteOrderFromPost() {
+        var pending = reservation("SUCCESS", 0, 60000);
+        when(orderMapper.findByRequestId("request-1")).thenReturn(Optional.empty(),
+            Optional.of(confirmedOrder("fast-order", "request-1", 2001L)));
+        when(reservationStore.reserve(1001L, 2001L, "request-1"))
+            .thenReturn(new ReservationResult(ReservationDecision.SUCCESS, pending));
+        when(publisher.publish(pending)).thenReturn(confirmedReservation());
+
+        assertThat(service.participate(COMMAND)).isEqualTo(new ParticipationOutcome(
+            BusinessCode.SUCCESS, "request-1", "fast-order", "CONFIRMED"));
+    }
+
+    @Test
+    void resultReadRereadsOrderWhenConsumerCommitsBetweenQueries() {
+        when(orderMapper.findByRequestId("request-1")).thenReturn(Optional.empty(),
+            Optional.of(confirmedOrder("fast-order", "request-1", 2001L)));
+        when(stockReservationService.findByRequestId("request-1"))
+            .thenReturn(Optional.of(confirmedReservation()));
+
+        assertThat(service.findByRequestId("request-1")).isEqualTo(new ParticipationOutcome(
+            BusinessCode.SUCCESS, "request-1", "fast-order", "CONFIRMED"));
+    }
+
+    @Test
+    void confirmedReservationWithoutOrderFailsInsteadOfReturningIncompleteSuccess() {
+        when(stockReservationService.findByRequestId("request-1"))
+            .thenReturn(Optional.of(confirmedReservation()));
+        assertBusinessCode(() -> service.findByRequestId("request-1"), BusinessCode.SERVICE_UNAVAILABLE);
+    }
+
+    @Test
+    void confirmedReservationDoesNotReturnAnotherUsersOrder() {
+        when(orderMapper.findByRequestId("request-1")).thenReturn(Optional.empty(),
+            Optional.of(confirmedOrder("wrong-order", "request-1", 9999L)));
+        when(stockReservationService.findByRequestId("request-1"))
+            .thenReturn(Optional.of(confirmedReservation()));
+        assertBusinessCode(() -> service.findByRequestId("request-1"), BusinessCode.SERVICE_UNAVAILABLE);
+    }
+
+    private StockReservationRecord confirmedReservation() {
+        var row = persistedReservation(reservation("SUCCESS", 0, 60000));
+        return new StockReservationRecord(row.id(), row.reservationId(), row.activityId(), row.userId(),
+            row.requestId(), StockReservationStatus.CONFIRMED, row.reservationId(), row.expireAt(),
+            row.createdAt(), row.updatedAt());
     }
 
     private ActivityView activity(

@@ -35,6 +35,58 @@ class RedisReservationStoreTest extends RedisContainerSupport {
     }
 
     @Test
+    void malformedOrphanDoesNotBlockAHealthyOrphanInTheSamePage() {
+        RedisReservationStore shortLived = new RedisReservationStore(redis, Duration.ofMillis(1));
+        shortLived.warmUp(activeActivity(ACTIVITY_ID, 10, 10));
+        shortLived.reserve(ACTIVITY_ID, 2001, "bad");
+        PendingReservation good = shortLived.reserve(ACTIVITY_ID, 2002, "good").reservation();
+        redis.opsForHash().put(PREFIX + "requests", "bad", "invalid-json");
+        org.awaitility.Awaitility.await().atMost(Duration.ofSeconds(3)).until(() ->
+            redis.opsForZSet().count(PREFIX + "pending", 0, System.currentTimeMillis()) == 2);
+        var activities = org.mockito.Mockito.mock(com.flashguard.activity.ActivityMapper.class);
+        var durable = org.mockito.Mockito.mock(StockReservationService.class);
+        var compensation = org.mockito.Mockito.mock(ReservationTimeoutCompensationService.class);
+        var issues = org.mockito.Mockito.mock(com.flashguard.reconciliation.ReconciliationIssueMapper.class);
+        var record = new StockReservationService(org.mockito.Mockito.mock(StockReservationMapper.class)).toPendingRecord(good);
+        org.mockito.Mockito.when(activities.findIdsAfter(0, 1)).thenReturn(List.of(ACTIVITY_ID));
+        org.mockito.Mockito.when(durable.createPending(good)).thenReturn(record);
+        new RedisOrphanRecoveryJob(activities, shortLived, durable, compensation, issues).recover();
+        org.mockito.Mockito.verify(compensation).compensateReservation(record);
+        org.mockito.Mockito.verify(issues).insert(org.mockito.ArgumentMatchers.eq(ACTIVITY_ID),
+            org.mockito.ArgumentMatchers.contains("bad"));
+    }
+
+    @Test
+    void releaseIsIdempotentAndDoesNotReleaseANewerReservationForTheSameRequest() {
+        store.warmUp(activeActivity(ACTIVITY_ID, 10, 10));
+        store.reserve(ACTIVITY_ID, 2001L, "release-1");
+        for (int i = 0; i < 100; i++) {
+            assertThat(store.releaseByRequestId(ACTIVITY_ID, "release-1")).isTrue();
+        }
+        assertThat(remaining(ACTIVITY_ID)).isEqualTo(10);
+        assertThat(store.countPendingReservations(ACTIVITY_ID)).isZero();
+        // The cancelled request remains a tombstone, so a delayed retry cannot reserve again.
+        assertThat(store.reserve(ACTIVITY_ID, 2001L, "release-1").decision())
+            .isEqualTo(ReservationDecision.REQUEST_CONFLICT);
+        assertThat(store.reserve(ACTIVITY_ID, 2001L, "release-2").decision())
+            .isEqualTo(ReservationDecision.SUCCESS);
+        assertThat(store.releaseByRequestId(ACTIVITY_ID, "release-1")).isTrue();
+        assertThat(remaining(ACTIVITY_ID)).isEqualTo(9);
+    }
+
+    @Test
+    void invalidReleaseDoesNotPartiallyDeleteReservation() {
+        store.warmUp(activeActivity(ACTIVITY_ID, 10, 10));
+        store.reserve(ACTIVITY_ID, 2001L, "release-1");
+        redis.opsForHash().put(PREFIX + "stock", "availableStock", "10");
+        assertThatThrownBy(() -> store.releaseByRequestId(ACTIVITY_ID, "release-1"))
+            .isInstanceOf(ReservationStoreException.class);
+        assertThat(redis.opsForHash().hasKey(PREFIX + "requests", "release-1")).isTrue();
+        assertThat(redis.opsForHash().hasKey(PREFIX + "users", "2001")).isTrue();
+        assertThat(store.countPendingReservations(ACTIVITY_ID)).isEqualTo(1);
+    }
+
+    @Test
     void warmupUsesAvailableDatabaseStockAndNeverOverwritesAnInitializedActivity() {
         ActivityView snapshot = activeActivity(ACTIVITY_ID, 500, 7);
 

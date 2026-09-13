@@ -99,4 +99,11 @@ public interface OrderMapper {
         @Param("order") OrderRecord order,
         @Param("reservationId") String reservationId
     );
+
+    @Select("""
+        SELECT COUNT(*)
+        FROM orders
+        WHERE activity_id = #{activityId}
+        """)
+    long countByActivity(@Param("activityId") long activityId);
 }

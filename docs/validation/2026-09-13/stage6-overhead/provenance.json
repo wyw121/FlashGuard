@@ -1,0 +1,12 @@
+{
+  "archivedAtUtc": "2026-09-13T18:13:51.6542313Z",
+  "sourceArtifact": "target/stage6-rate-limit-overhead.txt",
+  "observedSourceFileLastWriteTimeUtc": "2026-09-13T08:28:24.0781857Z",
+  "sha256": "40dba891f2124b40931cdc471361e41187c0591e9a939948413066d26e648294",
+  "sourceFileTimestampBoundary": "Filesystem timestamp observed when archived; not independent proof of execution time.",
+  "historicalGitRevision": null,
+  "historicalDirtySourceHash": null,
+  "historicalEnvironment": null,
+  "historicalExactCommand": null,
+  "provenanceBoundary": "Original text records sample counts and two latency percentiles only. No contemporaneous environment/source manifest was available with this artifact. Do not borrow provenance from later HTTP or Cluster runs."
+}

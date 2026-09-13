@@ -1,0 +1,44 @@
+{
+  "query_block": {
+    "select_id": 1,
+    "cost_info": {
+      "query_cost": "1.43"
+    },
+    "ordering_operation": {
+      "using_filesort": false,
+      "table": {
+        "table_name": "historical_orders",
+        "access_type": "range",
+        "possible_keys": [
+          "ix_history_status_created"
+        ],
+        "key": "ix_history_status_created",
+        "used_key_parts": [
+          "status",
+          "created_at",
+          "id"
+        ],
+        "key_length": "114",
+        "rows_examined_per_scan": 2,
+        "rows_produced_per_join": 2,
+        "filtered": "100.00",
+        "backward_index_scan": true,
+        "using_index": true,
+        "cost_info": {
+          "read_cost": "1.23",
+          "eval_cost": "0.20",
+          "prefix_cost": "1.43",
+          "data_read_per_join": "992"
+        },
+        "used_columns": [
+          "id",
+          "activity_id",
+          "user_id",
+          "status",
+          "created_at"
+        ],
+        "attached_condition": "((`flashguard_sql_experiment`.`historical_orders`.`status` = 'CONFIRMED') and ((`flashguard_sql_experiment`.`historical_orders`.`created_at` < TIMESTAMP'2020-01-01 03:05:11') or ((`flashguard_sql_experiment`.`historical_orders`.`created_at` = TIMESTAMP'2020-01-01 03:05:11') and (`flashguard_sql_experiment`.`historical_orders`.`id` < 111113))))"
+      }
+    }
+  }
+}

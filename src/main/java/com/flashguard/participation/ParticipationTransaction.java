@@ -55,6 +55,9 @@ public class ParticipationTransaction {
     public ParticipationOutcome execute(ParticipationCommand command) {
         OrderRecord replay = orderMapper.findByRequestId(command.requestId()).orElse(null);
         if (replay != null) {
+            if (replay.activityId() != command.activityId() || replay.userId() != command.userId()) {
+                throw new BusinessException(BusinessCode.DUPLICATE_PURCHASE);
+            }
             return ParticipationOutcome.replay(replay);
         }
 

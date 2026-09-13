@@ -1,0 +1,11 @@
+{
+  "querySha256" : "84cfd8eac6eecc07455bd5e66fbd732523c8830b27a513474f6ffc3690b3cc12",
+  "warmupMsExcluded" : [ 4.1151, 4.095, 4.6302, 4.1901, 4.0106 ],
+  "rawMs" : [ 3.9988, 6.0142, 4.8452, 7.1193, 7.2654, 12.4244, 7.1276, 6.3186, 11.7084, 12.6172, 7.3541, 6.4449, 5.2956, 6.0364, 6.9795, 6.5874, 8.1748, 3.8043, 4.6484, 4.4127 ],
+  "medianMs" : 6.51615,
+  "p95Ms" : 12.4244,
+  "minMs" : 3.8043,
+  "maxMs" : 12.6172,
+  "timingBoundary" : "JDBC execute plus full result fetch/materialization, excludes equality assertions and EXPLAIN ANALYZE",
+  "resultSha256" : "b5260722ea41c026280cceef01c9948c6b5b0641456dbeb4f4f94dd470d454c5"
+}
