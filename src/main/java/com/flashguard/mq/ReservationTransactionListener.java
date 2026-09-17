@@ -30,6 +30,7 @@ public class ReservationTransactionListener implements TransactionListener {
         LocalTransactionState result = LocalTransactionState.UNKNOW;
         try {
             PendingReservation p = codec.decode(message);
+            CorrelationContext.setTraceId(message.getUserProperty("traceId"));
             CorrelationContext.setRequestId(p.requestId());
             CorrelationContext.setReservationId(p.reservationId());
             CorrelationContext.setMessageKey(message.getKeys());

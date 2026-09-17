@@ -4,11 +4,11 @@
 
 | 范围 | 已获得证据 | 剩余门槛 |
 | --- | --- | --- |
-| 1 MySQL 基线 / 2 Redis 预占 | 历史并发与幂等集成验证；当前 MySQL HTTP 预检成功 | 最终全量回归与五轮基线 |
-| 3 事务消息 / 4 消费幂等 / 5 补偿对账 | [真实 MQ 11 项全部通过](real-mq/results.json)；本地事务死锁修复后 20/20 并发提交通过；终态响应修复后 26 项单元测试及五个 async HTTP 校准场景技术通过 | 最终全量回归、正式五轮 HTTP；Producer 无存活同组成员时冷重启恢复尚无专项证据 |
-| 6 缓存与限流 | Caffeine/共享 Redis/负缓存及限流组件测试；最新本地/全局 HTTP 限流校准分别 53/51 次正确拒绝，无系统错误、丢弃迭代或最终 Broker 积压；[已有逐调用开销记录归档](stage6-overhead/README.md) | 正式持续过载验证；早期开销记录缺同期环境/源码来源，完整可复现开销对照仍需带清单重测 |
+| 1 MySQL 基线 / 2 Redis 预占 | 2026-09-17 全量 `mvn verify`：148 tests、0 failures/errors；[正式 HTTP 五轮结果](../../../benchmark/results/fac1c6586b94f107f9c104c16694eae04b29f48c/2026-09-17T12-35-26.631044Z-98e87c79/aggregate.json) 中 MySQL 三场景均 PASS | 仅覆盖配置的 10 requests/s，不是最大容量结论 |
+| 3 事务消息 / 4 消费幂等 / 5 补偿对账 | 真实 MQ 11 项通过；全量回归含 producer-before-local 与 producer-after-commit 无同组存活成员冷恢复；正式 HTTP async 三场景均 PASS | 不覆盖数据库提交中的强杀；仅覆盖配置的 10 requests/s |
+| 6 缓存与限流 | Caffeine/共享 Redis/负缓存及限流组件测试；正式 HTTP 本地/全局限流各五轮 PASS，零系统错误、零 dropped iterations、最终 Broker lag 为零 | 仍需独立的持续过载/容量上探实验 |
 | 7 库存分桶 | [三主节点五轮 A/B](stage7-cluster-ab.md)，50,000 次成功预占和不变量通过 | 当前证据不支持稳定容量收益，生产保留单热点 |
-| 8 可观测性与故障注入 | 六个隔离脚本已落地，11 项真实 MQ 验收含全部六类故障；最新五个 async 校准场景资源采样完整 | 最终全量验证、正式压测资源采样归档；Broker 回查线程的原 traceId 透传尚需补齐验证 |
+| 8 可观测性与故障注入 | 六个隔离脚本与真实 MQ 11 项验收；正式 HTTP 五轮资源采样已归档；Broker 回查恢复消息 `traceId` 且 MDC 在回查后恢复的 14 项回归已通过 | 容量上探与生产隔离环境验证 |
 
 ## 已完成的真实 MQ 试验
 
@@ -20,7 +20,7 @@ Broker 使用官方 RocketMQ 5.3.2 Maven 制品，运行于隔离 Linux 容器�
 
 ## HTTP 压测验收口径
 
-最新[校准记录](http-calibration.md)为 `2026-09-13T13-31-11.516830900Z-29d1ecf6`：5 秒预热、10 秒测量、每场景 1 轮、10 requests/s、100 VUs。async-success、async-soldout、async-replay、async-limiter-local、async-limiter-global 五个场景全部技术 PASS，正式 benchmark 状态仍为 REVIEW。对应日志 `work-notes/http-calibration-terminal-fix.log` 为 27 tests、0 failures/errors/skips、BUILD SUCCESS，其中 26 项为 ParticipationService 单元测试，1 项 HTTP 测试包含五场景。此结论不覆盖最终 `mvn verify`。
+正式运行 `2026-09-17T12-35-26.631044Z-98e87c79` 已完成 8 个场景的 60 秒预热（排除统计）和 180 秒稳态 × 5 轮；[aggregate](../../../benchmark/results/fac1c6586b94f107f9c104c16694eae04b29f48c/2026-09-17T12-35-26.631044Z-98e87c79/aggregate.json) 为 `overallStatus=PASS`、`suiteCompleted=true`。每轮 k6 exit 0、系统错误和 dropped iterations 均为零，数据库、Redis、durable reservation 与 MQ 不变量均通过。MySQL-success 的五轮 committed-order RPS 中位数为 9.915，async-success 为 9.801；它们仅适用于此 10 requests/s 配置，不构成最大 QPS 或生产容量主张。
 
 早期 async 10/s 死锁失败、MySQL 50/s 冷启动超时及丢弃迭代记录仍保留，不被此次成功校准改写。Rate 指标以原始 k6 `metrics.system_error_rate.value` 为准，原先派生文件中的错误零值已识别为解析缺陷，不能作为成功证据。
 

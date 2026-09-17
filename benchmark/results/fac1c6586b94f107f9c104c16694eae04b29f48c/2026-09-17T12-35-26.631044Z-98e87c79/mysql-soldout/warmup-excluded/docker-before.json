@@ -1,0 +1,2 @@
+{"BlockIO":"67.1MB / 1.09GB","CPUPerc":"1.84%","Container":"48ed83025e1aae6291c44ea5ed2d71842abda54d996c2a7a1b2b07f9a54281d1","ID":"48ed83025e1a","MemPerc":"2.88%","MemUsage":"453.1MiB / 15.38GiB","Name":"hardcore_hermann","NetIO":"21MB / 26.7MB","PIDs":"41"}
+{"BlockIO":"147kB / 0B","CPUPerc":"0.63%","Container":"774cbb62d4da727f60fdb2e6efd1e837059368f50ab0d40c119c6f5eb90eabf9","ID":"774cbb62d4da","MemPerc":"0.02%","MemUsage":"3.695MiB / 15.38GiB","Name":"sweet_bouman","NetIO":"8.42kB / 39.9kB","PIDs":"6"}

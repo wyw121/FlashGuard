@@ -1,0 +1,53 @@
+diff --git a/src/main/java/com/flashguard/mq/ReservationTransactionListener.java b/src/main/java/com/flashguard/mq/ReservationTransactionListener.java
+index ab8098a..e2543e5 100644
+--- a/src/main/java/com/flashguard/mq/ReservationTransactionListener.java
++++ b/src/main/java/com/flashguard/mq/ReservationTransactionListener.java
+@@ -30,6 +30,7 @@ public class ReservationTransactionListener implements TransactionListener {
+         LocalTransactionState result = LocalTransactionState.UNKNOW;
+         try {
+             PendingReservation p = codec.decode(message);
++            CorrelationContext.setTraceId(message.getUserProperty("traceId"));
+             CorrelationContext.setRequestId(p.requestId());
+             CorrelationContext.setReservationId(p.reservationId());
+             CorrelationContext.setMessageKey(message.getKeys());
+diff --git a/src/test/java/com/flashguard/perf/RealHttpBenchmarkTest.java b/src/test/java/com/flashguard/perf/RealHttpBenchmarkTest.java
+index a92c085..08670a1 100644
+--- a/src/test/java/com/flashguard/perf/RealHttpBenchmarkTest.java
++++ b/src/test/java/com/flashguard/perf/RealHttpBenchmarkTest.java
+@@ -386,8 +386,33 @@ class RealHttpBenchmarkTest extends MySqlContainerSupport {
+         } finally { Files.deleteIfExists(file); }
+     }
+     private void capturePrometheus(String baseUrl, Path target) throws Exception {
+-        String response = HttpClient.newHttpClient().send(HttpRequest.newBuilder(URI.create(baseUrl + "/actuator/prometheus"))
+-            .timeout(Duration.ofSeconds(10)).GET().build(), HttpResponse.BodyHandlers.ofString()).body();
+-        Files.writeString(target, response);
++        PrometheusCapture.capture(baseUrl, target);
++    }
++
++    // Static nested helper allows HTTP contract tests without initializing the benchmark's containers.
++    static final class PrometheusCapture {
++        static void capture(String baseUrl, Path target) throws Exception {
++            HttpResponse<String> response = HttpClient.newHttpClient().send(
++                HttpRequest.newBuilder(URI.create(baseUrl + "/actuator/prometheus"))
++                    .timeout(Duration.ofSeconds(10)).GET().build(), HttpResponse.BodyHandlers.ofString());
++            // Retain even failed scrapes before rejecting them, so telemetry failures remain diagnosable.
++            Files.writeString(target, response.body());
++            Files.writeString(target.resolveSibling(target.getFileName() + ".http-status.txt"),
++                Integer.toString(response.statusCode()));
++            if (response.statusCode() != 200)
++                throw new IllegalStateException("Prometheus scrape HTTP " + response.statusCode() + ": " + target);
++            for (String metric : List.of("application_started_time_seconds", "jvm_memory_used_bytes", "process_uptime_seconds")) {
++                var samples = java.util.regex.Pattern.compile("(?m)^" + metric + "(?:\\{[^\\r\\n]*\\})?[ \\t]+([^ \\t\\r\\n]+)(?:[ \\t]|\\r?$)")
++                    .matcher(response.body());
++                boolean valid = false;
++                while (samples.find()) {
++                    try {
++                        double value = Double.parseDouble(samples.group(1));
++                        if (Double.isFinite(value) && value >= 0) valid = true;
++                    } catch (NumberFormatException invalidSample) { /* not a usable metric sample */ }
++                }
++                if (!valid) throw new IllegalStateException("Prometheus scrape lacks valid " + metric + ": " + target);
++            }
++        }
+     }
+ }

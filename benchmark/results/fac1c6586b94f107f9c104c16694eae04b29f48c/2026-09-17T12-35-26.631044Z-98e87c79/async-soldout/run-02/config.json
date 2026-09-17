@@ -1,0 +1,23 @@
+{
+  "scenario" : "async-soldout",
+  "repetition" : 2,
+  "activityId" : 7027,
+  "initialStock" : 2,
+  "targetRps" : 10,
+  "seconds" : 180,
+  "vus" : 100,
+  "warmupExcluded" : false,
+  "protocolShortfalls" : [ ],
+  "topic" : "fg_perf_ab3acbd889534bcd8f60acaaa5419c27",
+  "consumerGroup" : "fg_perf_c_ab3acbd889534bcd8f60acaaa5419c27",
+  "start" : "2026-09-17T13:48:39.622035400Z",
+  "dataSeed" : "activity=7027;users=1000000+iteration;replayModulo=50",
+  "mysqlSettings" : {
+    "version" : "8.4.8",
+    "bufferPoolBytes" : 134217728,
+    "maxConnections" : 151,
+    "transactionIsolation" : "REPEATABLE-READ",
+    "flushLogAtCommit" : 1
+  },
+  "brokerMessagesBefore" : 9606
+}

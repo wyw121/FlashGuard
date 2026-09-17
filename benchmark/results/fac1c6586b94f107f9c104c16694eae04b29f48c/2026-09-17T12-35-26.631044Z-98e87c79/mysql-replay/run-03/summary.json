@@ -1,0 +1,169 @@
+{
+    "root_group": {
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {},
+        "name": ""
+    },
+    "metrics": {
+        "http_req_sending": {
+            "med": 0,
+            "max": 1.6369,
+            "p(50)": 0,
+            "p(95)": 0.5331,
+            "p(99)": 0.7308,
+            "min": 0
+        },
+        "admission_ms": {
+            "min": 1.4946,
+            "med": 5.8472,
+            "max": 88.8399,
+            "p(50)": 5.8472,
+            "p(95)": 13.095,
+            "p(99)": 54.8863
+        },
+        "iteration_duration": {
+            "p(99)": 57.5594,
+            "min": 1.4946,
+            "med": 6.4075,
+            "max": 91.318,
+            "p(50)": 6.4075,
+            "p(95)": 13.7272
+        },
+        "vus": {
+            "value": 0,
+            "min": 0,
+            "max": 1
+        },
+        "vus_max": {
+            "value": 100,
+            "min": 100,
+            "max": 100
+        },
+        "http_req_duration{expected_response:true}": {
+            "min": 1.4946,
+            "med": 5.8472,
+            "max": 88.8399,
+            "p(50)": 5.8472,
+            "p(95)": 13.095,
+            "p(99)": 54.8863
+        },
+        "accepted_requests": {
+            "rate": 10.005023910818322,
+            "count": 1801
+        },
+        "replayed_requests": {
+            "count": 1751,
+            "rate": 9.727260892750072
+        },
+        "http_req_receiving": {
+            "min": 0,
+            "med": 0,
+            "max": 4.7828,
+            "p(50)": 0,
+            "p(95)": 0.76,
+            "p(99)": 1.262
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 1801,
+            "value": 0
+        },
+        "throttled_requests": {
+            "count": 0,
+            "rate": 0
+        },
+        "data_sent": {
+            "rate": 2039.0194288164848,
+            "count": 367043
+        },
+        "confirmed_e2e_ms": {
+            "p(95)": 14,
+            "p(99)": 57,
+            "min": 1,
+            "med": 6,
+            "max": 92,
+            "p(50)": 6
+        },
+        "iterations": {
+            "rate": 10.005023910818322,
+            "count": 1801
+        },
+        "http_req_connecting": {
+            "p(95)": 0.7545,
+            "p(99)": 1.93,
+            "min": 0,
+            "med": 0,
+            "max": 2.3586,
+            "p(50)": 0
+        },
+        "http_req_duration": {
+            "p(50)": 5.8472,
+            "p(95)": 13.095,
+            "p(99)": 54.8863,
+            "min": 1.4946,
+            "med": 5.8472,
+            "max": 88.8399
+        },
+        "http_req_tls_handshaking": {
+            "p(99)": 0,
+            "min": 0,
+            "med": 0,
+            "max": 0,
+            "p(50)": 0,
+            "p(95)": 0
+        },
+        "confirmed_results": {
+            "count": 1801,
+            "rate": 10.005023910818322
+        },
+        "system_error_rate": {
+            "fails": 1801,
+            "passes": 0,
+            "thresholds": {
+                "rate==0": false
+            },
+            "value": 0
+        },
+        "business_rejections": {
+            "count": 0,
+            "rate": 0
+        },
+        "http_reqs": {
+            "rate": 10.005023910818322,
+            "count": 1801
+        },
+        "dropped_iterations": {
+            "count": 0,
+            "rate": 0,
+            "thresholds": {
+                "count==0": false
+            }
+        },
+        "participation_requests": {
+            "count": 1801,
+            "rate": 10.005023910818322
+        },
+        "http_req_waiting": {
+            "min": 1.2348,
+            "med": 5.6901,
+            "max": 87.8846,
+            "p(50)": 5.6901,
+            "p(95)": 12.3596,
+            "p(99)": 54.8863
+        },
+        "data_received": {
+            "count": 582313,
+            "rate": 3234.900326807523
+        },
+        "http_req_blocked": {
+            "min": 0,
+            "med": 0,
+            "max": 2.9837,
+            "p(50)": 0,
+            "p(95)": 0.9692,
+            "p(99)": 2.0648
+        }
+    }
+}
