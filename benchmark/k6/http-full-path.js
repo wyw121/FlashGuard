@@ -44,16 +44,19 @@ export default function () {
   const id = exec.scenario.iterationInTest;
   // Replay is a deterministic 50-user/50-request distribution, not accidental duplicate UUIDs.
   const slot = mode === 'replay' ? id % 50 : id;
+  // Each pair competes for one user with distinct requests; order of arrival is irrelevant.
+  const userSlot = mode === 'mixed' ? Math.floor(id / 2) : slot;
   const requestId = `${__ENV.RUN_ID}-${slot}`;
   const start = Date.now();
   const response = http.post(`${__ENV.BASE_URL}/api/v1/activities/${__ENV.ACTIVITY_ID}/participations`,
-    JSON.stringify({ userId: 1000000 + slot, requestId }),
+    JSON.stringify({ userId: 1000000 + userSlot, requestId }),
     { headers: { 'Content-Type': 'application/json' }, timeout: '10s', tags: { name: 'participate' } });
   admission.add(response.timings.duration);
   const value = body(response);
   if (['SOLD_OUT', 'DUPLICATE_PURCHASE', 'THROTTLED'].includes(value.code)) {
     rejects.add(1); if (value.code === 'THROTTLED') throttled.add(1);
-    recordError(response.status !== (value.code === 'THROTTLED' ? 429 : 409) || mode === 'success' || mode === 'replay',
+    recordError(response.status !== (value.code === 'THROTTLED' ? 429 : 409) || mode === 'success' || mode === 'replay'
+      || (mode === 'mixed' && value.code !== 'DUPLICATE_PURCHASE'),
       requestId, 'admission_business_rejection', response, value, start); return;
   }
   if (![200, 201, 202].includes(response.status) || !['SUCCESS', 'REPLAY', 'PENDING'].includes(value.code)) {

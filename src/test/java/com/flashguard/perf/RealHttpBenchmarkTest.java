@@ -66,8 +66,8 @@ class RealHttpBenchmarkTest extends MySqlContainerSupport {
             admin.setInstanceName("perf-admin-" + UUID.randomUUID()); admin.setVipChannelEnabled(false); admin.start();
             writeEnvironment(sha);
             Set<String> selected = new LinkedHashSet<>(Arrays.asList(System.getProperty("perf.scenarios",
-                "mysql-success,mysql-soldout,mysql-replay,async-success,async-soldout,async-replay,async-limiter-local,async-limiter-global").split(",")));
-            Set<String> known = Set.of("mysql-success", "mysql-soldout", "mysql-replay", "async-success", "async-soldout", "async-replay", "async-limiter-local", "async-limiter-global");
+                "mysql-success,mysql-soldout,mysql-replay,mysql-mixed,async-success,async-soldout,async-replay,async-mixed,async-limiter-local,async-limiter-global").split(",")));
+            Set<String> known = Set.of("mysql-success", "mysql-soldout", "mysql-replay", "mysql-mixed", "async-success", "async-soldout", "async-replay", "async-mixed", "async-limiter-local", "async-limiter-global");
             if (!known.containsAll(selected)) throw new IllegalArgumentException("Unknown perf.scenarios: " + selected);
             for (String profile : List.of("mysql", "async", "async-limiter-local", "async-limiter-global")) {
                 List<String> scenarios = selected.stream().filter(s -> profile.startsWith("async-limiter") ? s.equals(profile)
@@ -135,7 +135,9 @@ class RealHttpBenchmarkTest extends MySqlContainerSupport {
         record.put("initialStock", stock); record.put("targetRps", rate); record.put("seconds", runSeconds); record.put("vus", vus);
         record.put("warmupExcluded", warmup); record.put("protocolShortfalls", protocolShortfalls());
         record.put("topic", topic); record.put("consumerGroup", consumerGroup); record.put("start", Instant.now().toString());
-        record.put("dataSeed", "activity=" + activity + ";users=1000000+iteration;replayModulo=50");
+        record.put("dataSeed", "activity=" + activity + (kind.equals("mixed")
+            ? ";users=1000000+floor(iteration/2);request=runId+iteration;expectedDuplicateFraction=0.5"
+            : ";users=1000000+slot;slot=replay?iteration%50:iteration"));
         record.put("mysqlSettings", jdbc.queryForMap("SELECT @@version AS version, @@innodb_buffer_pool_size AS bufferPoolBytes, @@max_connections AS maxConnections, @@transaction_isolation AS transactionIsolation, @@innodb_flush_log_at_trx_commit AS flushLogAtCommit"));
         long messagesBefore = brokerMessages(); record.put("brokerMessagesBefore", messagesBefore);
         write(directory.resolve("config.json"), record);
@@ -173,7 +175,8 @@ class RealHttpBenchmarkTest extends MySqlContainerSupport {
         List<String> reviewReasons = new ArrayList<>(protocolShortfalls());
         if (load.exitValue() != 0 || dropped != 0 || systemErrors != 0) failures.add("k6 threshold/system-error/dropped-iteration gate");
         if (requests < rate * runSeconds * 0.99) failures.add("achieved arrivals below 99% of target");
-        long expectedOrders = kind.equals("replay") ? Math.min(50, requests) : finalResponses;
+        long expectedOrders = kind.equals("replay") ? Math.min(50, requests)
+            : kind.equals("mixed") ? (requests + 1) / 2 : finalResponses;
         try {
             await().atMost(Duration.ofSeconds(60)).ignoreExceptions().until(() ->
                 count(jdbc, "SELECT COUNT(*) FROM orders WHERE activity_id=?", activity) >= expectedOrders
@@ -230,6 +233,8 @@ class RealHttpBenchmarkTest extends MySqlContainerSupport {
         if (kind.equals("success") && (rejected != 0 || finalResponses != requests)) failures.add("all-success traffic rejected or incomplete");
         if (kind.equals("soldout") && (orderCount != stock || rejected == 0)) failures.add("soldout scenario did not exhaust stock and reject excess");
         if (kind.equals("limiter") && (throttle == 0 || finalResponses == 0)) failures.add("limiter comparison lacks both accept and throttle observations");
+        if (kind.equals("mixed") && (finalResponses != expectedOrders || rejected != requests / 2 || throttle != 0))
+            failures.add("mixed traffic must confirm one order per user pair and reject the other distinct request");
         Files.writeString(directory.resolve("redis-info.txt"), template.execute((org.springframework.data.redis.core.RedisCallback<String>) connection ->
             connection.serverCommands().info().toString()));
         Files.writeString(directory.resolve("docker-after.json"), command("docker", "stats", "--no-stream", "--format", "{{json .}}", MYSQL.getContainerId(), redis.getContainerId()));

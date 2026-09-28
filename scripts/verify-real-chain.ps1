@@ -1,11 +1,13 @@
 [CmdletBinding()]
 param(
     [ValidateSet('All','RedisOutage','MysqlOutage','ProducerKill','ConsumerKill','ConsumerFailure','Backlog','Stage6','Stage7')]
-    [string]$Scenario = 'All'
+    [string]$Scenario = 'All',
+    [string]$MavenSettings
 )
 $ErrorActionPreference = 'Stop'
 $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $settingsPath = Join-Path (Split-Path $projectRoot -Parent) 'work-notes\maven-settings.xml'
+if ($MavenSettings) { $settingsPath = (Resolve-Path -LiteralPath $MavenSettings -ErrorAction Stop).Path }
 docker version --format '{{.Server.Version}}'
 if ($LASTEXITCODE -ne 0) { throw 'Docker Desktop Linux engine must be running for isolated MySQL/Redis tests.' }
 docker image inspect flashguard-mq-test-runtime:local *> $null
@@ -24,9 +26,13 @@ $tests = switch ($Scenario) {
     'Stage7' { 'RedisHotKeyBenchmarkTest,RedisClusterBucketBenchmarkTest' }
     default { $null }
 }
-$mavenArgs = @('-s', $settingsPath, '-f', (Join-Path $projectRoot 'pom.xml'), '-Dflashguard.test.db.url=')
+$mavenArgs = @('-Dflashguard.test.db.url=')
+if (Test-Path -LiteralPath $settingsPath -PathType Leaf) { $mavenArgs += @('-s', $settingsPath) }
 if ($tests) { $mavenArgs += "-Dtest=$tests" }
 $mavenArgs += 'verify'
-& mvn @mavenArgs
-if ($LASTEXITCODE -ne 0) { throw "FAIL: $Scenario. Inspect target/surefire-reports and target/rocketmq-it." }
+Push-Location $projectRoot
+try {
+    & mvn @mavenArgs
+    if ($LASTEXITCODE -ne 0) { throw "FAIL: $Scenario. Inspect target/surefire-reports and target/rocketmq-it." }
+} finally { Pop-Location }
 Write-Host "PASS: $Scenario selected tests and packaging. Inspect reports for exact scope; this is not production capacity acceptance."
