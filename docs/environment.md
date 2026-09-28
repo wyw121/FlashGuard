@@ -28,7 +28,7 @@
 | Testcontainers | 2.0.5 |
 | 正式 MySQL 容器目标 | `mysql:8.4.8` |
 | 正式 Redis 容器目标 | `redis:7.4.8` |
-| RocketMQ Spring Boot Starter（后续阶段） | 2.3.6 |
+| RocketMQ Remoting SDK / Broker / NameServer | 5.3.2（直接 SDK 集成，未使用 Spring Boot Starter） |
 
 `compose.yml` 和 Testcontainers 都固定使用 `mysql:8.4.8`，不使用 `latest`。Flyway 迁移仍是数据库结构的唯一来源。
 

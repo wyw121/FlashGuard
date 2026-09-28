@@ -2,7 +2,7 @@
 
 状态：**PASS（2026-09-13 对应真实 MQ 方法）**。见[结果摘要](../validation/2026-09-13/real-mq/results.json)与[保留观测](../validation/2026-09-13/real-mq/fault-observations.txt)：本次消费失败 3 次、失败的 Broker 重投 2 次、恢复后成功重投 1 次。不代表全项目或性能验收。
 
-前提：Docker Desktop Linux engine、Java 17+、Maven、PowerShell 7，以及 `D:\code\flashguard-workbench\work-notes\maven-settings.xml`。无需已有应用、活动或外部数据库；测试拒绝外部 MySQL 覆盖配置。
+前提：Docker Desktop Linux engine、Java 17+、Maven、PowerShell 7；Maven settings 为可选，工作台已有配置会自动沿用。无需已有应用、活动或外部数据库；测试拒绝外部 MySQL 覆盖配置。
 
 ```powershell
 pwsh -NoProfile -File 'D:\code\flashguard-workbench\flashguard\scripts\failure-cases\inject-mysql-slow-or-down.ps1'

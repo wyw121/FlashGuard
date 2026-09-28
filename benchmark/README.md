@@ -12,13 +12,24 @@ docker build -t flashguard-mq-test-runtime:local -f config/rocketmq/Dockerfile.t
 mvn '-Dtest=RealHttpBenchmarkTest' '-Dflashguard.perf.enabled=true' '-Dperf.repetitions=5' '-Dperf.warmup.seconds=60' '-Dperf.seconds=180' '-Dperf.rate=10' '-Dperf.vus=100' test
 ```
 
-默认 8 个场景，每个场景先预热 60 秒，再重复 5 轮，每轮稳态 180 秒、10 次参加请求/秒，符合方案 9.5 的时间与重复次数要求：MySQL 和 async 的全成功、售罄、固定 50 个 requestId 重放，以及 async 单机限流和 Redis 全局限流。默认速率保守设置为 10，是依据本机 MySQL 50 RPS 预检失败、MySQL 10 RPS 短预检成功作出的校准选择；async 的早期短预检有错误，必须单独重新验证，这不是正式容量结论。限流阈值均为目标速率的一半；它们与相同速率的 async-success 比较。完整默认运行约需 128 分钟流量时间，再加组件启动、偏移提交、结果采集。预热使用独立 activity，原始结果保留在 `warmup-excluded`，不进入中位数结论。首次实机运行前可做功能预检：
+默认 10 个场景，每个场景先预热 60 秒，再重复 5 轮，每轮稳态 180 秒、10 次参加请求/秒，符合方案 9.5 的时间与重复次数要求：MySQL 和 async 的全成功、售罄、固定 50 个 requestId 重放、混合用户流量，以及 async 单机限流和 Redis 全局限流。原有 8 场景已于 2026-09-17 完成正式五轮，见[阶段台账](../docs/validation/2026-09-13/stages-1-8-acceptance.md)；新增 mixed 场景的证据单独记录。限流阈值均为目标速率的一半；它们与相同速率的 async-success 比较。完整默认运行约需 160 分钟流量时间，再加组件启动、偏移提交、结果采集。预热使用独立 activity，原始结果保留在 `warmup-excluded`，不进入中位数结论。首次实机运行前可做功能预检：
 
 ```powershell
 mvn '-Dtest=RealHttpBenchmarkTest' '-Dflashguard.perf.enabled=true' '-Dperf.scenarios=mysql-success,async-success' '-Dperf.repetitions=1' '-Dperf.warmup.seconds=0' '-Dperf.seconds=5' '-Dperf.rate=10' '-Dperf.vus=30' test
 ```
 
-预热不足 60 秒、稳态不足 180 秒、少于 5 轮或资源采样缺失均标记 REVIEW，不能作为完成方案要求的基准；每个短缺项写入 `protocolShortfalls`。该测试默认跳过，日常 `mvn test` 不会触发长时间压测。`perf.scenarios` 可选逗号分隔的 `mysql-success,mysql-soldout,mysql-replay,async-success,async-soldout,async-replay,async-limiter-local,async-limiter-global`。
+预热不足 60 秒、稳态不足 180 秒、少于 5 轮或资源采样缺失均标记 REVIEW，不能作为完成方案要求的基准；每个短缺项写入 `protocolShortfalls`。该测试默认跳过，日常 `mvn test` 不会触发长时间压测。`perf.scenarios` 可选逗号分隔的 `mysql-success,mysql-soldout,mysql-replay,mysql-mixed,async-success,async-soldout,async-replay,async-mixed,async-limiter-local,async-limiter-global`。
+
+`mixed` 固定每两个相邻迭代共享 userId、使用不同 requestId；库存大于全部请求数。每对请求无论谁先到都只能产生一单，另一请求必须返回 HTTP 409 / DUPLICATE_PURCHASE。N 次请求应有 `ceil(N/2)` 张订单及确认响应、`floor(N/2)` 次重复购买拒绝；售罄、限流或任何系统错误均不算预期混合结果。它与 `replay` 的“同 requestId 返回原结果”分别验证，不能把业务拒绝当作订单吞吐。只补跑混合场景：
+
+```powershell
+Set-Location 'D:\code\flashguard-workbench\flashguard'
+mvn '-Dtest=RealHttpBenchmarkTest' '-Dflashguard.perf.enabled=true' '-Dperf.scenarios=mysql-mixed,async-mixed' '-Dperf.warmup.seconds=60' '-Dperf.seconds=180' '-Dperf.repetitions=5' '-Dperf.rate=10' '-Dperf.vus=100' test
+```
+
+`scripts/run-benchmarks.ps1`、`scripts/verify-real-chain.ps1` 和 `scripts/verify-stage5.ps1` 会在项目目录运行 Maven，并恢复调用目录。工作台 settings 存在时沿用；独立克隆不存在该文件时使用 Maven 默认配置，也可以显式传入 `-MavenSettings 'C:\path\settings.xml'`。纯脚本契约验证可运行 `node --test benchmark/k6/http-full-path.test.cjs` 和 `pwsh -NoProfile -File scripts/tests/benchmark-wrappers.test.ps1`，它们不替代真实 HTTP 验收。
+
+Windows 长测需接通电源并保持开盖。可选包装器 `pwsh -NoProfile -File scripts/run-awake-validation.ps1 -Mode AsyncMixed` 只补跑异步混合五轮，`-Mode Regression` 执行全量验证，`-Mode Probe` 仅验证电源请求。它要求 64 位 PowerShell 7 和交流电，运行期间持有临时 system/execution 请求，结束时释放，不更改永久电源方案或锁屏策略。主动睡眠/合盖仍会中断实验；电池模式下临时请求受系统限制，见 [Microsoft PowerSetRequest](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-powersetrequest)。2026-09-28 因 Modern Standby 中断的失败轮次已保留，不能删去或计入正常容量统计。
 
 每次执行保留 `benchmark/results/<git-sha>/<timestamp-id>/<scenario>/run-01..05/`：
 

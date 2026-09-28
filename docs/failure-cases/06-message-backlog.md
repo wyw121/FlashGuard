@@ -2,7 +2,7 @@
 
 状态：**PASS（2026-09-13 对应真实 MQ 方法）**。见[结果摘要](../validation/2026-09-13/real-mq/results.json)与[Broker 偏移观测](../validation/2026-09-13/real-mq/fault-observations.txt)：本次实际积压为 **20 → 0**。不代表全项目或容量验收。
 
-前提：Docker Desktop Linux engine、Java 17+、Maven、PowerShell 7，以及 `D:\code\flashguard-workbench\work-notes\maven-settings.xml`。包装器自行创建专属组件和测试活动，无需现有应用或活动 1001。
+前提：Docker Desktop Linux engine、Java 17+、Maven、PowerShell 7；Maven settings 为可选，工作台已有配置会自动沿用。包装器自行创建专属组件和测试活动，无需现有应用或活动 1001。
 
 ```powershell
 pwsh -NoProfile -File 'D:\code\flashguard-workbench\flashguard\scripts\failure-cases\inject-message-backlog.ps1'

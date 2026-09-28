@@ -2,7 +2,7 @@
 
 状态：**PASS（2026-09-13 对应真实 MQ 方法）**。见[保留结果](../validation/2026-09-13/real-mq/results.json)和[JUnit 报告](../validation/2026-09-13/real-mq/junit-result.txt)；不代表全项目或任意事务中断位置均通过。
 
-前提：Docker Desktop Linux engine、Java 17+、Maven、PowerShell 7，以及 `D:\code\flashguard-workbench\work-notes\maven-settings.xml`。组件、活动、Topic 和消费组由测试创建，无需预先启动应用或创建活动 1001。
+前提：Docker Desktop Linux engine、Java 17+、Maven、PowerShell 7；Maven settings 为可选，工作台已有配置会自动沿用。组件、活动、Topic 和消费组由测试创建，无需预先启动应用或创建活动 1001。
 
 ```powershell
 pwsh -NoProfile -File 'D:\code\flashguard-workbench\flashguard\scripts\failure-cases\inject-consumer-kill.ps1'

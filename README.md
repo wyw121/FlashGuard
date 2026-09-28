@@ -2,7 +2,20 @@
 
 FlashGuard 是一个面向秒杀场景的营销库存与订单后端。目前包含 MySQL 同步基线、Redis Lua 预占、durable reservation、事务内幂等消费者，以及超时补偿、Redis 孤儿预占恢复和持久化对账。数据库是最终订单事实；`PENDING` 不代表订单完成。
 
-**当前进度（2026-09-13）：** 已实现真实 RocketMQ 事务生产、Broker 回查、消费重试/DLQ、超时补偿与对账，正在执行真实故障和 HTTP 压测验收。Caffeine + Redis 缓存、本地/全局 Lua 限流的组件测试已通过；三主节点 Cluster 的五轮单热点/分桶 A/B 已实际完成。最新数据见 [阶段 7 实验](docs/validation/2026-09-13/stage7-cluster-ab.md)，端到端复现方法见 [benchmark](benchmark/README.md)。历史 [阶段 5 记录](docs/validation/2026-09-13/stage5-implementation-and-validation.md) 保留当时的验收边界。
+**当前进度（2026-09-28 核对）：** 阶段 1–8 的后端主链路、缓存限流、补偿对账、可观测性与六类真实故障已有实现和验证。2026-09-17 的 8 个 HTTP 场景均完成 60 秒预热、180 秒稳态 × 5 轮，在配置的 10 requests/s 下 PASS；这不是最大容量。百万历史订单 SQL 实验已完成；三主节点五轮 A/B 未证明分桶有稳定收益，因此生产路径保留单热点。本轮补充方案 9.4 的混合用户流量与独立克隆脚本验证。
+
+| 交付证据 | 入口 |
+| --- | --- |
+| 阶段进度与验收边界 | [阶段 1–8 台账](docs/validation/2026-09-13/stages-1-8-acceptance.md) |
+| 本轮补充与验证 | [2026-09-28 执行记录](docs/validation/2026-09-28-completion.md) |
+| HTTP 协议、原始数据与复现 | [benchmark](benchmark/README.md) |
+| 百万订单数据集、索引与深分页 | [SQL 实验](docs/validation/2026-09-13/million-orders-sql.md) |
+| 单热点 / Cluster 分桶取舍 | [五轮 A/B](docs/validation/2026-09-13/stage7-cluster-ab.md) |
+| 故障注入与恢复 | [六类真实故障](docs/failure-cases/README.md) |
+| 设计决策 | [ADR 001–009](docs/adr/README.md) |
+| 请求流与项目讲述 | [结合代码的讲解](docs/interview-notes/project-walkthrough.md) |
+
+交付面为后端 HTTP API、测试与运行脚本，不包含前端商城或管理控制台。历史记录保留当时的状态；新增验证不会覆盖失败轮次。
 
 ## 阶段 1 范围与非目标
 
@@ -211,7 +224,7 @@ mvn '-Dtest=RedisReservationStoreTest,ReservationWarmupServiceTest' test
 
 ## 真实故障复现
 
-六个[故障包装器与场景说明](docs/failure-cases/README.md)自建专属组件、随机 Topic/组和活动，不要求已运行应用或活动 1001。需要 Docker Desktop Linux engine、Java 17+、Maven、PowerShell 7，以及工作台 Maven 配置 `D:\code\flashguard-workbench\work-notes\maven-settings.xml`。例如：
+六个[故障包装器与场景说明](docs/failure-cases/README.md)自建专属组件、随机 Topic/组和活动，不要求已运行应用或活动 1001。需要 Docker Desktop Linux engine、Java 17+、Maven、PowerShell 7。工作台 Maven settings 存在时自动沿用；独立克隆使用 Maven 默认配置，也可在 `verify-real-chain.ps1` 传入 `-MavenSettings`。例如：
 
 ```powershell
 pwsh -NoProfile -File 'D:\code\flashguard-workbench\flashguard\scripts\failure-cases\inject-mysql-slow-or-down.ps1'

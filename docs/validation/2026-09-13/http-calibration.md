@@ -1,5 +1,7 @@
 # HTTP calibration: preserve failed preflights, 2026-09-13
 
+Historical snapshot: “pending” below describes 2026-09-13. The original eight scenarios subsequently completed their formal protocol on 2026-09-17; see the [current acceptance ledger](stages-1-8-acceptance.md). These short/failed calibrations retain their original verdicts.
+
 **These are calibration runs, not sustainable-capacity results.** The latest five asynchronous scenarios pass their short-run technical gates after the response-state correction; their formal benchmark status remains REVIEW. Earlier failed cold preflights are retained below. None meets the formal protocol of 60 seconds of excluded warmup, 180 seconds of steady load and five measured repetitions. Formal HTTP results remain pending.
 
 ## Latest calibration after terminal-response correction

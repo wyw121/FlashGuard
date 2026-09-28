@@ -6,7 +6,7 @@
 
 ## 前提与入口
 
-需要 Docker Desktop **Linux engine** 已运行、Java 17 或更高版本、Maven、PowerShell 7，以及工作台 Maven 配置 `D:\code\flashguard-workbench\work-notes\maven-settings.xml`。首次运行需要下载依赖和镜像；包装器会检查并按需构建 `flashguard-mq-test-runtime:local`。Broker 在专属 Linux 容器中运行官方 Maven 构件，使用自己的存储目录。测试拒绝外部 MySQL 覆盖地址，包装器显式清空该覆盖参数。
+需要 Docker Desktop **Linux engine** 已运行、Java 17 或更高版本、Maven、PowerShell 7；Maven settings 为可选，工作台已有配置会自动沿用。首次运行需要下载依赖和镜像；包装器会检查并按需构建 `flashguard-mq-test-runtime:local`。Broker 在专属 Linux 容器中运行官方 Maven 构件，使用自己的存储目录。测试拒绝外部 MySQL 覆盖地址，包装器显式清空该覆盖参数。
 
 按场景选一个命令，建议串行运行，避免宿主资源竞争：
 
@@ -23,7 +23,7 @@ pwsh -NoProfile -File 'D:\code\flashguard-workbench\flashguard\scripts\failure-c
 | --- | --- | --- |
 | [Redis 不可用](01-redis-unavailable.md) | 暂停专属 Redis；async 调用失败后恢复；若超时命令晚到，执行 orphan scanner | SERVICE_UNAVAILABLE，无订单，最终 Redis/DB 库存均恢复 200 |
 | [MySQL 不可用](02-mysql-slow-or-down.md) | 暂停专属 MySQL，观察失败 Broker 重投，再恢复并成功重投 | 真实失败/成功重投均出现；一单、两侧库存 199 |
-| [Producer 退出](03-producer-kill.md) | 子 JVM 在 half message 后、本地事务前，或本地提交后 `halt(137)`；存活同组 Producer 接受回查 | 前者取消且零单，后者确认且一单，回查次数大于零 |
+| [Producer 退出](03-producer-kill.md) | 子 JVM 在 half message 后、本地事务前，或本地提交后 `halt(137)`；当前脚本在其退出后启动同组新 Producer 冷恢复 | 前者取消且零单，后者确认且一单，回查次数大于零 |
 | [Consumer 退出](04-consumer-kill.md) | 子 JVM 收到消息、尚未调用 JDBC 业务事务时 `halt(137)`；同组新 Consumer 接管 | 退出时零单，恢复后一单，库存只扣一次 |
 | [消费者持续失败](05-consumer-forced-exception.md) | 将本测试活动 DB 可用库存置零，持续触发真实事务回滚，进入 DLQ；移除注入后超时补偿 | DLQ 中存在消息，零单，最终取消，两侧库存 200 |
 | [Broker 积压](06-message-backlog.md) | SDK Consumer 正常停止后发送 20 个新预占，再同组启动并排空 | 偏移停止推进、Broker 实际积压；恢复后 21 单、库存 179、Broker 积压归零 |
@@ -32,7 +32,7 @@ pwsh -NoProfile -File 'D:\code\flashguard-workbench\flashguard\scripts\failure-c
 
 ConsumerKill 的测试方法名含 `BeforeCommit`，实际注入点是消息回调入口，**在调用 `ReservationConsumerService`、开启该业务 JDBC 事务之前**，不是在 SQL 已执行或 JDBC commit 进行到一半时杀进程。它证明“投递后、业务处理前退出且未 ACK”能被重新投递，不能用作“任意提交中断窗口都已覆盖”的证据。
 
-Producer 的两个点也应分开解读：half message 已持久化但本地事务尚未开始；或本地事务已提交、回调尚未把 COMMIT 返回给 SDK。恢复依靠存活的同一 Producer Group 成员处理 Broker 回查，不是把应用内直接调用监听器当作消息恢复。
+Producer 的两个点也应分开解读：half message 已持久化但本地事务尚未开始；或本地事务已提交、回调尚未把 COMMIT 返回给 SDK。2026-09-13 归档使用存活同组成员，当前脚本已加强为同组无存活成员后的冷恢复（2026-09-17 回归见[台账](../validation/2026-09-13/stages-1-8-acceptance.md)）。两者都使用真实 Broker 回查，不把应用内直接调用监听器当作消息恢复。
 
 ## 指标与证据
 

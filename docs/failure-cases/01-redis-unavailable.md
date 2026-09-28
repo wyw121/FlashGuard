@@ -2,7 +2,7 @@
 
 状态：**PASS（2026-09-13 对应真实 MQ 方法）**。见[结果摘要](../validation/2026-09-13/real-mq/results.json)与[保留观测](../validation/2026-09-13/real-mq/fault-observations.txt)：本次 `delayedReservation=true stock=200`，覆盖了晚到预占分支。不代表全项目或性能验收。
 
-前提：Docker Desktop Linux engine 已运行，Java 17+、Maven、PowerShell 7 可用，工作台 `D:\code\flashguard-workbench\work-notes\maven-settings.xml` 存在。包装器负责隔离组件、测试活动与 MQ 客户端，不需要启动现有应用或准备活动 1001。
+前提：Docker Desktop Linux engine 已运行，Java 17+、Maven、PowerShell 7 可用。Maven settings 为可选，工作台已有配置会自动沿用。包装器负责隔离组件、测试活动与 MQ 客户端，不需要启动现有应用或准备活动 1001。
 
 ```powershell
 pwsh -NoProfile -File 'D:\code\flashguard-workbench\flashguard\scripts\failure-cases\inject-redis-unavailable.ps1'

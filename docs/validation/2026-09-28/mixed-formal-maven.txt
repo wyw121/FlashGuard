@@ -1,0 +1,404 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------------< com.flashguard:flashguard >----------------------
+[INFO] Building FlashGuard 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[WARNING] 1 problem was encountered while building the effective model for org.javassist:javassist:jar:3.21.0-GA during dependency collection step for project (use -X to see details)
+[WARNING] 1 problem was encountered while building the effective model for org.javassist:javassist:jar:3.20.0-GA during dependency collection step for project (use -X to see details)
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ flashguard ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 10 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ flashguard ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ flashguard ---
+[INFO] skip non existing resourceDirectory D:\code\flashguard-workbench\flashguard\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ flashguard ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.6:test (default-test) @ flashguard ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.flashguard.perf.RealHttpBenchmarkTest
+18:44:15.253 [main] INFO org.testcontainers.images.PullPolicy -- Image pull policy will be performed by: DefaultPullPolicy()
+18:44:15.272 [main] INFO org.testcontainers.utility.ImageNameSubstitutor -- Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+18:44:16.920 [main] INFO org.testcontainers.DockerClientFactory -- Testcontainers version: 2.0.5
+18:44:18.222 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Loaded org.testcontainers.dockerclient.NpipeSocketClientProviderStrategy from ~/.testcontainers.properties, will try it first
+18:44:20.460 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Found Docker environment with local Npipe socket (npipe:////./pipe/docker_engine)
+18:44:20.465 [main] INFO org.testcontainers.DockerClientFactory -- Docker host IP address is localhost
+18:44:20.556 [main] INFO org.testcontainers.DockerClientFactory -- Connected to docker: 
+  Server Version: 28.3.3
+  API Version: 1.51
+  Operating System: Docker Desktop
+  Total Memory: 15753 MB
+  Labels: 
+    com.docker.desktop.address=npipe://\\.\pipe\docker_cli
+18:44:20.688 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Creating container for image: testcontainers/ryuk:0.14.0
+18:44:21.279 [main] INFO org.testcontainers.utility.RegistryAuthLocator -- Credential helper/store (docker-credential-desktop) does not have credentials for https://index.docker.io/v1/
+18:44:21.800 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Container testcontainers/ryuk:0.14.0 is starting: 6dd098efb23c9293906bf43244d1bdf352565ad9fd4232453265a4669d1a03e2
+18:44:23.033 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Container testcontainers/ryuk:0.14.0 started in PT2.3451432S
+18:44:23.082 [main] INFO org.testcontainers.utility.RyukResourceReaper -- Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
+18:44:23.083 [main] INFO org.testcontainers.DockerClientFactory -- Checking the system...
+18:44:23.087 [main] INFO org.testcontainers.DockerClientFactory -- ?? Docker server version should be at least 1.6.0
+18:44:23.090 [main] INFO tc.mysql:8.4.8 -- Creating container for image: mysql:8.4.8
+18:44:23.269 [main] INFO tc.mysql:8.4.8 -- Container mysql:8.4.8 is starting: a736229d7d50c49f02aa95117c0234eca27980b415ba8deaa71b8740f6d426c0
+18:44:24.051 [main] INFO tc.mysql:8.4.8 -- Waiting for database connection to become available at jdbc:mysql://localhost:44377/flashguard using query 'SELECT 1'
+18:44:56.332 [main] INFO tc.mysql:8.4.8 -- Container mysql:8.4.8 started in PT33.2415798S
+18:44:56.333 [main] INFO tc.mysql:8.4.8 -- Container is started (JDBC URL: jdbc:mysql://localhost:44377/flashguard)
+18:44:56.338 [main] INFO tc.redis:7.4.8 -- Creating container for image: redis:7.4.8
+18:44:56.527 [main] INFO tc.redis:7.4.8 -- Container redis:7.4.8 is starting: bbcfc1a56315efb16e634bb478d42700eb22841b6ec68c7eb3f85b664a33ee3b
+18:44:57.589 [main] INFO tc.redis:7.4.8 -- Container redis:7.4.8 started in PT1.2513768S
+18:44:57.714 [main] INFO tc.flashguard-mq-test-runtime:local -- Creating container for image: flashguard-mq-test-runtime:local
+18:44:59.426 [main] INFO tc.flashguard-mq-test-runtime:local -- Container flashguard-mq-test-runtime:local is starting: 7150a7edc396edcae56e0ae15926d0aefda2bcf178f656170050fb6b1ad2f806
+18:45:31.214 [main] INFO tc.flashguard-mq-test-runtime:local -- Container flashguard-mq-test-runtime:local started in PT33.5000471S
+FLASHGUARD_REAL_ROCKETMQ=5.3.2 runtime=docker image=flashguard-mq-test-runtime:local nameserver=127.0.0.1:44363 broker=127.0.0.1:35262 logs=D:\code\flashguard-workbench\flashguard\target\rocketmq-it\896679a9-8314-42b2-bfa5-c70e1c2672cb
+18:45:31,314 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.LoggerContext[default] - This is logback-classic version 1.3.5-rocketmq
+18:45:31,409 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [rmq.logback-test.xml]
+18:45:31,409 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [rmq.logback.xml]
+18:45:31,411 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [rmq.proxy.logback.xml]
+18:45:31,411 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.LoggerContext[default] - Found resource [rmq.broker.logback.xml] at [jar:file:/D:/code/flashguard-workbench/.m2/repository/org/apache/rocketmq/rocketmq-broker/5.3.2/rocketmq-broker-5.3.2.jar!/rmq.broker.logback.xml]
+18:45:31,440 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.joran.spi.ConfigurationWatchList@5f7eee96 - URL [jar:file:/D:/code/flashguard-workbench/.m2/repository/org/apache/rocketmq/rocketmq-broker/5.3.2/rocketmq-broker-5.3.2.jar!/rmq.broker.logback.xml] is not of type file
+18:45:31,888 |-WARN in org.apache.rocketmq.logging.ch.qos.logback.classic.joran.action.LevelAction - <level> element is deprecated. Near [level] on line 700
+18:45:31,888 |-WARN in org.apache.rocketmq.logging.ch.qos.logback.classic.joran.action.LevelAction - Please use "level" attribute within <logger> or <root> elements instead.
+18:45:32,104 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.ConfigurationModelHandler - Registering a new ReconfigureOnChangeTask ReconfigureOnChangeTask(born:1790592332104)
+18:45:32,105 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.ConfigurationModelHandler - Will scan for changes in [jar:file:/D:/code/flashguard-workbench/.m2/repository/org/apache/rocketmq/rocketmq-broker/5.3.2/rocketmq-broker-5.3.2.jar!/rmq.broker.logback.xml] 
+18:45:32,105 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.ConfigurationModelHandler - Setting ReconfigureOnChangeTask scanning period to 30 seconds
+18:45:32,116 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [DefaultSiftingAppender_inner]
+18:45:32,116 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.SiftingAppender]
+18:45:32,154 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.ImplicitModelHandler - Assuming default type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.MDCBasedDiscriminator] for [discriminator] property
+18:45:32,167 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [DefaultSiftingAppender]
+18:45:32,167 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender]
+18:45:32,175 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [DefaultSiftingAppender_inner] to org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[DefaultSiftingAppender]
+18:45:32,175 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[DefaultSiftingAppender] - Attaching appender named [DefaultSiftingAppender_inner] to AsyncAppender.
+18:45:32,176 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[DefaultSiftingAppender] - Setting discardingThreshold to 51
+18:45:32,177 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [RocketmqBrokerSiftingAppender_inner]
+18:45:32,177 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.SiftingAppender]
+18:45:32,177 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.ImplicitModelHandler - Assuming default type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.MDCBasedDiscriminator] for [discriminator] property
+18:45:32,178 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [RocketmqBrokerSiftingAppender]
+18:45:32,178 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender]
+18:45:32,179 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqBrokerSiftingAppender_inner] to org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqBrokerSiftingAppender]
+18:45:32,179 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqBrokerSiftingAppender] - Attaching appender named [RocketmqBrokerSiftingAppender_inner] to AsyncAppender.
+18:45:32,179 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqBrokerSiftingAppender] - Setting discardingThreshold to 51
+18:45:32,179 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [RocketmqProtectionSiftingAppender_inner]
+18:45:32,179 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.SiftingAppender]
+18:45:32,182 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.ImplicitModelHandler - Assuming default type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.MDCBasedDiscriminator] for [discriminator] property
+18:45:32,183 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [RocketmqProtectionSiftingAppender]
+18:45:32,183 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender]
+18:45:32,183 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqProtectionSiftingAppender_inner] to org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqProtectionSiftingAppender]
+18:45:32,183 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqProtectionSiftingAppender] - Attaching appender named [RocketmqProtectionSiftingAppender_inner] to AsyncAppender.
+18:45:32,183 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqProtectionSiftingAppender] - Setting discardingThreshold to 51
+18:45:32,184 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [RocketmqWaterMarkSiftingAppender_inner]
+18:45:32,184 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.SiftingAppender]
+18:45:32,184 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.ImplicitModelHandler - Assuming default type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.MDCBasedDiscriminator] for [discriminator] property
+18:45:32,186 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [RocketmqWaterMarkSiftingAppender]
+18:45:32,186 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender]
+18:45:32,186 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqWaterMarkSiftingAppender_inner] to org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqWaterMarkSiftingAppender]
+18:45:32,186 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqWaterMarkSiftingAppender] - Attaching appender named [RocketmqWaterMarkSiftingAppender_inner] to AsyncAppender.
+18:45:32,186 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqWaterMarkSiftingAppender] - Setting discardingThreshold to 51
+18:45:32,186 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [RocketmqRocksDBSiftingAppender_inner]
+18:45:32,186 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.SiftingAppender]
+18:45:32,187 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.ImplicitModelHandler - Assuming default type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.MDCBasedDiscriminator] for [discriminator] property
+18:45:32,188 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [RocketmqRocksDBSiftingAppender]
+18:45:32,188 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender]
+18:45:32,188 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqRocksDBSiftingAppender_inner] to org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqRocksDBSiftingAppender]
+18:45:32,188 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqRocksDBSiftingAppender] - Attaching appender named [RocketmqRocksDBSiftingAppender_inner] to AsyncAppender.
+18:45:32,188 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqRocksDBSiftingAppender] - Setting discardingThreshold to 51
+18:45:32,189 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [RocketmqStoreSiftingAppender_inner]
+18:45:32,189 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.SiftingAppender]
+18:45:32,190 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.ImplicitModelHandler - Assuming default type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.MDCBasedDiscriminator] for [discriminator] property
+18:45:32,190 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [RocketmqStoreSiftingAppender]
+18:45:32,190 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender]
+18:45:32,192 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqStoreSiftingAppender_inner] to org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqStoreSiftingAppender]
+18:45:32,192 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqStoreSiftingAppender] - Attaching appender named [RocketmqStoreSiftingAppender_inner] to AsyncAppender.
+18:45:32,192 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqStoreSiftingAppender] - Setting discardingThreshold to 51
+18:45:32,192 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [RocketmqTieredStoreSiftingAppender_inner]
+18:45:32,192 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.SiftingAppender]
+18:45:32,192 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.ImplicitModelHandler - Assuming default type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.MDCBasedDiscriminator] for [discriminator] property
+18:45:32,193 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [RocketmqTieredStoreSiftingAppender]
+18:45:32,193 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender]
+18:45:32,193 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqTieredStoreSiftingAppender_inner] to org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqTieredStoreSiftingAppender]
+18:45:32,193 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqTieredStoreSiftingAppender] - Attaching appender named [RocketmqTieredStoreSiftingAppender_inner] to AsyncAppender.
+18:45:32,193 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqTieredStoreSiftingAppender] - Setting discardingThreshold to 51
+18:45:32,193 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [RocketmqTrafficSiftingAppender_inner]
+18:45:32,193 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.SiftingAppender]
+18:45:32,194 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.ImplicitModelHandler - Assuming default type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.MDCBasedDiscriminator] for [discriminator] property
+18:45:32,195 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [RocketmqTrafficSiftingAppender]
+18:45:32,195 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender]
+18:45:32,195 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqTrafficSiftingAppender_inner] to org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqTrafficSiftingAppender]
+18:45:32,195 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqTrafficSiftingAppender] - Attaching appender named [RocketmqTrafficSiftingAppender_inner] to AsyncAppender.
+18:45:32,195 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqTrafficSiftingAppender] - Setting discardingThreshold to 51
+18:45:32,195 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [RocketmqRemotingSiftingAppender_inner]
+18:45:32,195 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.SiftingAppender]
+18:45:32,196 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.ImplicitModelHandler - Assuming default type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.MDCBasedDiscriminator] for [discriminator] property
+18:45:32,196 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [RocketmqRemotingSiftingAppender]
+18:45:32,196 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender]
+18:45:32,197 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqRemotingSiftingAppender_inner] to org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqRemotingSiftingAppender]
+18:45:32,197 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqRemotingSiftingAppender] - Attaching appender named [RocketmqRemotingSiftingAppender_inner] to AsyncAppender.
+18:45:32,197 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqRemotingSiftingAppender] - Setting discardingThreshold to 51
+18:45:32,197 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [RocketmqStoreErrorSiftingAppender_inner]
+18:45:32,197 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.SiftingAppender]
+18:45:32,198 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.ImplicitModelHandler - Assuming default type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.MDCBasedDiscriminator] for [discriminator] property
+18:45:32,198 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [RocketmqStoreErrorSiftingAppender]
+18:45:32,198 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender]
+18:45:32,199 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqStoreErrorSiftingAppender_inner] to org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqStoreErrorSiftingAppender]
+18:45:32,199 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqStoreErrorSiftingAppender] - Attaching appender named [RocketmqStoreErrorSiftingAppender_inner] to AsyncAppender.
+18:45:32,199 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqStoreErrorSiftingAppender] - Setting discardingThreshold to 51
+18:45:32,199 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [RocketmqTransactionSiftingAppender_inner]
+18:45:32,199 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.SiftingAppender]
+18:45:32,200 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.ImplicitModelHandler - Assuming default type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.MDCBasedDiscriminator] for [discriminator] property
+18:45:32,202 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [RocketmqTransactionSiftingAppender]
+18:45:32,202 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender]
+18:45:32,202 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqTransactionSiftingAppender_inner] to org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqTransactionSiftingAppender]
+18:45:32,202 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqTransactionSiftingAppender] - Attaching appender named [RocketmqTransactionSiftingAppender_inner] to AsyncAppender.
+18:45:32,202 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqTransactionSiftingAppender] - Setting discardingThreshold to 51
+18:45:32,204 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [RocketmqRebalanceLockSiftingAppender_inner]
+18:45:32,204 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.SiftingAppender]
+18:45:32,205 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.ImplicitModelHandler - Assuming default type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.MDCBasedDiscriminator] for [discriminator] property
+18:45:32,206 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [RocketmqRebalanceLockSiftingAppender]
+18:45:32,206 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender]
+18:45:32,206 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqRebalanceLockSiftingAppender_inner] to org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqRebalanceLockSiftingAppender]
+18:45:32,206 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqRebalanceLockSiftingAppender] - Attaching appender named [RocketmqRebalanceLockSiftingAppender_inner] to AsyncAppender.
+18:45:32,206 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqRebalanceLockSiftingAppender] - Setting discardingThreshold to 51
+18:45:32,208 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [RocketmqFilterSiftingAppender_inner]
+18:45:32,208 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.SiftingAppender]
+18:45:32,208 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.ImplicitModelHandler - Assuming default type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.MDCBasedDiscriminator] for [discriminator] property
+18:45:32,209 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [RocketmqRebalanceLockSiftingAppender]
+18:45:32,209 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender]
+18:45:32,210 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqFilterSiftingAppender_inner] to org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqRebalanceLockSiftingAppender]
+18:45:32,210 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqRebalanceLockSiftingAppender] - Attaching appender named [RocketmqFilterSiftingAppender_inner] to AsyncAppender.
+18:45:32,210 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqRebalanceLockSiftingAppender] - Setting discardingThreshold to 51
+18:45:32,210 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [RocketmqStatsSiftingAppender_inner]
+18:45:32,210 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.SiftingAppender]
+18:45:32,211 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.ImplicitModelHandler - Assuming default type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.MDCBasedDiscriminator] for [discriminator] property
+18:45:32,212 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [RocketmqStatsSiftingAppender]
+18:45:32,212 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender]
+18:45:32,212 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqStatsSiftingAppender_inner] to org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqStatsSiftingAppender]
+18:45:32,212 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqStatsSiftingAppender] - Attaching appender named [RocketmqStatsSiftingAppender_inner] to AsyncAppender.
+18:45:32,212 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqStatsSiftingAppender] - Setting discardingThreshold to 51
+18:45:32,213 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [RocketmqCommercialSiftingAppender_inner]
+18:45:32,213 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.SiftingAppender]
+18:45:32,213 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.ImplicitModelHandler - Assuming default type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.MDCBasedDiscriminator] for [discriminator] property
+18:45:32,215 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [RocketmqCommercialSiftingAppender]
+18:45:32,216 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender]
+18:45:32,216 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqCommercialSiftingAppender_inner] to org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqCommercialSiftingAppender]
+18:45:32,216 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqCommercialSiftingAppender] - Attaching appender named [RocketmqCommercialSiftingAppender_inner] to AsyncAppender.
+18:45:32,216 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqCommercialSiftingAppender] - Setting discardingThreshold to 51
+18:45:32,216 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [RocketmqPopSiftingAppender_inner]
+18:45:32,216 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.SiftingAppender]
+18:45:32,217 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.ImplicitModelHandler - Assuming default type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.MDCBasedDiscriminator] for [discriminator] property
+18:45:32,217 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [RocketmqPopSiftingAppender]
+18:45:32,217 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender]
+18:45:32,217 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqPopSiftingAppender_inner] to org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqPopSiftingAppender]
+18:45:32,217 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqPopSiftingAppender] - Attaching appender named [RocketmqPopSiftingAppender_inner] to AsyncAppender.
+18:45:32,217 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqPopSiftingAppender] - Setting discardingThreshold to 51
+18:45:32,218 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [RocketmqColdCtrSiftingAppender]
+18:45:32,218 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.SiftingAppender]
+18:45:32,218 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.ImplicitModelHandler - Assuming default type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.MDCBasedDiscriminator] for [discriminator] property
+18:45:32,219 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [RocketmqBrokerMetricsSiftingAppender_inner]
+18:45:32,219 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.SiftingAppender]
+18:45:32,219 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.ImplicitModelHandler - Assuming default type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.MDCBasedDiscriminator] for [discriminator] property
+18:45:32,220 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [RocketmqBrokerMetricsSiftingAppender]
+18:45:32,220 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender]
+18:45:32,220 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqBrokerMetricsSiftingAppender_inner] to org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqBrokerMetricsSiftingAppender]
+18:45:32,220 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqBrokerMetricsSiftingAppender] - Attaching appender named [RocketmqBrokerMetricsSiftingAppender_inner] to AsyncAppender.
+18:45:32,220 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqBrokerMetricsSiftingAppender] - Setting discardingThreshold to 51
+18:45:32,221 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [RocketmqAuthAuditSiftingAppender_inner]
+18:45:32,221 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.SiftingAppender]
+18:45:32,221 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.ImplicitModelHandler - Assuming default type [org.apache.rocketmq.logging.ch.qos.logback.classic.sift.MDCBasedDiscriminator] for [discriminator] property
+18:45:32,223 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [RocketmqAuthAuditSiftingAppender]
+18:45:32,223 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender]
+18:45:32,223 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqAuthAuditSiftingAppender_inner] to org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqAuthAuditSiftingAppender]
+18:45:32,223 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqAuthAuditSiftingAppender] - Attaching appender named [RocketmqAuthAuditSiftingAppender_inner] to AsyncAppender.
+18:45:32,223 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.AsyncAppender[RocketmqAuthAuditSiftingAppender] - Setting discardingThreshold to 51
+18:45:32,223 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [STDOUT]
+18:45:32,223 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [org.apache.rocketmq.logging.ch.qos.logback.core.ConsoleAppender]
+18:45:32,230 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.ImplicitModelHandler - Assuming default type [org.apache.rocketmq.logging.ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
+18:45:32,331 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [RocketmqBroker] to INFO
+18:45:32,331 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting additivity of logger [RocketmqBroker] to false
+18:45:32,331 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqBrokerSiftingAppender] to Logger[RocketmqBroker]
+18:45:32,332 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [RocketmqProtection] to INFO
+18:45:32,332 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting additivity of logger [RocketmqProtection] to false
+18:45:32,332 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqProtectionSiftingAppender] to Logger[RocketmqProtection]
+18:45:32,332 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [RocketmqWaterMark] to INFO
+18:45:32,332 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting additivity of logger [RocketmqWaterMark] to false
+18:45:32,332 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqWaterMarkSiftingAppender] to Logger[RocketmqWaterMark]
+18:45:32,332 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [RocketmqCommon] to INFO
+18:45:32,332 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting additivity of logger [RocketmqCommon] to false
+18:45:32,332 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqBrokerSiftingAppender] to Logger[RocketmqCommon]
+18:45:32,332 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [RocketmqRocksDB] to INFO
+18:45:32,332 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting additivity of logger [RocketmqRocksDB] to false
+18:45:32,332 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqRocksDBSiftingAppender] to Logger[RocketmqRocksDB]
+18:45:32,332 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [RocketmqStore] to INFO
+18:45:32,332 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting additivity of logger [RocketmqStore] to false
+18:45:32,332 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqStoreSiftingAppender] to Logger[RocketmqStore]
+18:45:32,332 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [RocketmqStoreError] to INFO
+18:45:32,332 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting additivity of logger [RocketmqStoreError] to false
+18:45:32,332 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqStoreErrorSiftingAppender] to Logger[RocketmqStoreError]
+18:45:32,333 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [RocketmqTieredStore] to INFO
+18:45:32,333 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting additivity of logger [RocketmqTieredStore] to false
+18:45:32,333 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqTieredStoreSiftingAppender] to Logger[RocketmqTieredStore]
+18:45:32,333 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [RocketmqTransaction] to INFO
+18:45:32,333 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting additivity of logger [RocketmqTransaction] to false
+18:45:32,333 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqTransactionSiftingAppender] to Logger[RocketmqTransaction]
+18:45:32,333 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [RocketmqRebalanceLock] to INFO
+18:45:32,333 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting additivity of logger [RocketmqRebalanceLock] to false
+18:45:32,334 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqRebalanceLockSiftingAppender] to Logger[RocketmqRebalanceLock]
+18:45:32,334 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [RocketmqRemoting] to INFO
+18:45:32,334 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting additivity of logger [RocketmqRemoting] to false
+18:45:32,334 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqRemotingSiftingAppender] to Logger[RocketmqRemoting]
+18:45:32,334 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [RocketmqStats] to INFO
+18:45:32,334 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting additivity of logger [RocketmqStats] to false
+18:45:32,334 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqStatsSiftingAppender] to Logger[RocketmqStats]
+18:45:32,334 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [RocketmqCommercial] to INFO
+18:45:32,334 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting additivity of logger [RocketmqCommercial] to false
+18:45:32,334 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqCommercialSiftingAppender] to Logger[RocketmqCommercial]
+18:45:32,334 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [RocketmqConsole] to INFO
+18:45:32,334 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting additivity of logger [RocketmqConsole] to false
+18:45:32,334 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [STDOUT] to Logger[RocketmqConsole]
+18:45:32,334 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [RocketmqPop] to INFO
+18:45:32,334 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting additivity of logger [RocketmqPop] to false
+18:45:32,335 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqPopSiftingAppender] to Logger[RocketmqPop]
+18:45:32,335 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting additivity of logger [RocketmqColdCtr] to false
+18:45:32,335 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LevelModelHandler - RocketmqColdCtr level set to INFO
+18:45:32,335 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqColdCtrSiftingAppender] to Logger[RocketmqColdCtr]
+18:45:32,336 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [RocketmqTraffic] to INFO
+18:45:32,336 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting additivity of logger [RocketmqTraffic] to false
+18:45:32,336 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqTrafficSiftingAppender] to Logger[RocketmqTraffic]
+18:45:32,336 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingMetricExporter] to INFO
+18:45:32,336 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting additivity of logger [io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingMetricExporter] to false
+18:45:32,336 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqBrokerMetricsSiftingAppender] to Logger[io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingMetricExporter]
+18:45:32,336 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [io.opentelemetry.exporter.logging.LoggingMetricExporter] to INFO
+18:45:32,336 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting additivity of logger [io.opentelemetry.exporter.logging.LoggingMetricExporter] to false
+18:45:32,336 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqBrokerMetricsSiftingAppender] to Logger[io.opentelemetry.exporter.logging.LoggingMetricExporter]
+18:45:32,336 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [RocketmqAuthAudit] to INFO
+18:45:32,336 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting additivity of logger [RocketmqAuthAudit] to false
+18:45:32,336 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [RocketmqAuthAuditSiftingAppender] to Logger[RocketmqAuthAudit]
+18:45:32,337 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.classic.model.processor.RootLoggerModelHandler - Setting level of ROOT logger to INFO
+18:45:32,337 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [DefaultSiftingAppender] to Logger[ROOT]
+18:45:32,338 |-INFO in org.apache.rocketmq.logging.ch.qos.logback.core.model.processor.DefaultProcessor@3a36cd5 - End of configuration.
+18:45:32,341 |-INFO in org.apache.rocketmq.common.logging.JoranConfiguratorExt@53f0d09c - Registering current configuration as safe fallback point
+
+Standard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts
+2026-09-28 18:45:44.872 | INFO| [main]     - Starting ForkedBooter v3.5.6 using Java 21.0.9 with PID 404 (started by wywyw in D:\code\flashguard-workbench\flashguard)
+2026-09-28 18:45:44.878 | INFO| [main]     - No active profile set, falling back to 1 default profile: "default"
+2026-09-28 18:45:51.316 | INFO| [main]     - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-09-28 18:45:51.330 | INFO| [main]     - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-09-28 18:45:51.559 | INFO| [main]     - Finished Spring Data repository scanning in 137 ms. Found 0 Redis repository interfaces.
+2026-09-28 18:45:54.833 | INFO| [main]     - Tomcat initialized with port 0 (http)
+2026-09-28 18:45:54.922 | INFO| [main]     - Starting service [Tomcat]
+2026-09-28 18:45:54.922 | INFO| [main]     - Starting Servlet engine: [Apache Tomcat/10.1.55]
+2026-09-28 18:45:55.363 | INFO| [main]     - Initializing Spring embedded WebApplicationContext
+2026-09-28 18:45:55.367 | INFO| [main]     - Root WebApplicationContext: initialization completed in 10270 ms
+Standard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts
+2026-09-28 18:45:57.321 | INFO| [main]     - HikariPool-1 - Starting...
+2026-09-28 18:45:58.064 | INFO| [main]     - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@42ceb67f
+2026-09-28 18:45:58.077 | INFO| [main]     - HikariPool-1 - Start completed.
+2026-09-28 18:45:58.301 | INFO| [main]     - Database: jdbc:mysql://localhost:44377/flashguard (MySQL 8.4)
+2026-09-28 18:46:00.743 | WARN| [main]     - Flyway upgrade recommended: MySQL 8.4 is newer than this version of Flyway and support has not been tested. The latest supported version of MySQL is 8.1.
+2026-09-28 18:46:00.929 | INFO| [main]     - Schema history table `flashguard`.`flyway_schema_history` does not exist yet
+2026-09-28 18:46:00.953 | INFO| [main]     - Successfully validated 6 migrations (execution time 00:00.145s)
+2026-09-28 18:46:01.099 | INFO| [main]     - Creating Schema History table `flashguard`.`flyway_schema_history` ...
+2026-09-28 18:46:01.530 | INFO| [main]     - Current version of schema `flashguard`: << Empty Schema >>
+2026-09-28 18:46:01.621 | INFO| [main]     - Migrating schema `flashguard` to version "1 - create mysql baseline"
+2026-09-28 18:46:02.238 | INFO| [main]     - Migrating schema `flashguard` to version "2 - add stock reservation table"
+2026-09-28 18:46:02.595 | INFO| [main]     - Migrating schema `flashguard` to version "3 - add reservation id to orders"
+2026-09-28 18:46:03.085 | INFO| [main]     - Migrating schema `flashguard` to version "4 - add reconciliation issue"
+2026-09-28 18:46:03.505 | INFO| [main]     - Migrating schema `flashguard` to version "5 - allow retry after cancelled reservation"
+2026-09-28 18:46:04.112 | INFO| [main]     - Migrating schema `flashguard` to version "6 - add conflicting reservation cancellation fence"
+2026-09-28 18:46:04.393 | INFO| [main]     - Successfully applied 6 migrations to schema `flashguard`, now at version v6 (execution time 00:01.828s)
+2026-09-28 18:46:12.524 | INFO| [main]     - Exposing 4 endpoints beneath base path '/actuator'
+2026-09-28 18:46:12.964 | INFO| [main]     - Tomcat started on port 44672 (http) with context path '/'
+2026-09-28 18:46:13.064 | INFO| [main]     - Started ForkedBooter in 30.832 seconds (process running for 120.364)
+2026-09-28 18:46:17.410 | INFO| [http-nio-auto-1-exec-1]     - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-09-28 18:46:17.411 | INFO| [http-nio-auto-1-exec-1]     - Initializing Servlet 'dispatcherServlet'
+2026-09-28 18:46:17.418 | INFO| [http-nio-auto-1-exec-1]     - Completed initialization in 7 ms
+FLASHGUARD_HTTP_BENCHMARK scenario=mysql-mixed run=0 status=EXCLUDED_WARMUP orders=300 result=D:\code\flashguard-workbench\flashguard\benchmark\results\82b0718d0865a3a8f9ce6a243c9603b0472d40f9\2026-09-28T10-44-16.868955800Z-03e19b72\mysql-mixed\warmup-excluded
+FLASHGUARD_HTTP_BENCHMARK scenario=mysql-mixed run=1 status=PASS orders=901 result=D:\code\flashguard-workbench\flashguard\benchmark\results\82b0718d0865a3a8f9ce6a243c9603b0472d40f9\2026-09-28T10-44-16.868955800Z-03e19b72\mysql-mixed\run-01
+FLASHGUARD_HTTP_BENCHMARK scenario=mysql-mixed run=2 status=PASS orders=901 result=D:\code\flashguard-workbench\flashguard\benchmark\results\82b0718d0865a3a8f9ce6a243c9603b0472d40f9\2026-09-28T10-44-16.868955800Z-03e19b72\mysql-mixed\run-02
+FLASHGUARD_HTTP_BENCHMARK scenario=mysql-mixed run=3 status=PASS orders=900 result=D:\code\flashguard-workbench\flashguard\benchmark\results\82b0718d0865a3a8f9ce6a243c9603b0472d40f9\2026-09-28T10-44-16.868955800Z-03e19b72\mysql-mixed\run-03
+FLASHGUARD_HTTP_BENCHMARK scenario=mysql-mixed run=4 status=PASS orders=901 result=D:\code\flashguard-workbench\flashguard\benchmark\results\82b0718d0865a3a8f9ce6a243c9603b0472d40f9\2026-09-28T10-44-16.868955800Z-03e19b72\mysql-mixed\run-04
+FLASHGUARD_HTTP_BENCHMARK scenario=mysql-mixed run=5 status=PASS orders=900 result=D:\code\flashguard-workbench\flashguard\benchmark\results\82b0718d0865a3a8f9ce6a243c9603b0472d40f9\2026-09-28T10-44-16.868955800Z-03e19b72\mysql-mixed\run-05
+2026-09-28 19:03:04.461 | INFO| [main]     - Commencing graceful shutdown. Waiting for active requests to complete
+2026-09-28 19:03:04.492 | INFO| [tomcat-shutdown]     - Graceful shutdown complete
+2026-09-28 19:03:04.611 | INFO| [main]     - HikariPool-1 - Shutdown initiated...
+2026-09-28 19:03:04.661 | INFO| [main]     - HikariPool-1 - Shutdown completed.
+2026-09-28 19:03:05.241 | INFO| [main]     - Starting ForkedBooter v3.5.6 using Java 21.0.9 with PID 404 (started by wywyw in D:\code\flashguard-workbench\flashguard)
+2026-09-28 19:03:05.243 | INFO| [main]     - No active profile set, falling back to 1 default profile: "default"
+2026-09-28 19:03:07.750 | INFO| [main]     - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-09-28 19:03:07.751 | INFO| [main]     - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-09-28 19:03:07.862 | INFO| [main]     - Finished Spring Data repository scanning in 101 ms. Found 0 Redis repository interfaces.
+2026-09-28 19:03:08.388 | INFO| [main]     - Tomcat initialized with port 0 (http)
+2026-09-28 19:03:08.391 | INFO| [main]     - Starting service [Tomcat]
+2026-09-28 19:03:08.391 | INFO| [main]     - Starting Servlet engine: [Apache Tomcat/10.1.55]
+2026-09-28 19:03:08.707 | INFO| [main]     - Initializing Spring embedded WebApplicationContext
+2026-09-28 19:03:08.707 | INFO| [main]     - Root WebApplicationContext: initialization completed in 3447 ms
+Standard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts
+2026-09-28 19:03:09.024 | INFO| [main]     - HikariPool-2 - Starting...
+2026-09-28 19:03:09.318 | INFO| [main]     - HikariPool-2 - Added connection com.mysql.cj.jdbc.ConnectionImpl@743e5472
+2026-09-28 19:03:09.318 | INFO| [main]     - HikariPool-2 - Start completed.
+2026-09-28 19:03:09.345 | INFO| [main]     - Database: jdbc:mysql://localhost:44377/flashguard (MySQL 8.4)
+2026-09-28 19:03:09.393 | WARN| [main]     - Flyway upgrade recommended: MySQL 8.4 is newer than this version of Flyway and support has not been tested. The latest supported version of MySQL is 8.1.
+2026-09-28 19:03:09.467 | INFO| [main]     - Successfully validated 6 migrations (execution time 00:00.062s)
+2026-09-28 19:03:09.531 | INFO| [main]     - Current version of schema `flashguard`: 6
+2026-09-28 19:03:09.537 | INFO| [main]     - Schema `flashguard` is up to date. No migration necessary.
+2026-09-28 19:03:11.998 | INFO| [main]     - Exposing 4 endpoints beneath base path '/actuator'
+2026-09-28 19:03:12.124 | INFO| [main]     - Tomcat started on port 57587 (http) with context path '/'
+2026-09-28 19:03:12.215 | INFO| [main]     - Started ForkedBooter in 7.298 seconds (process running for 1139.516)
+2026-09-28 19:03:15.550 | INFO| [http-nio-auto-2-exec-1]     - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-09-28 19:03:15.550 | INFO| [http-nio-auto-2-exec-1]     - Initializing Servlet 'dispatcherServlet'
+2026-09-28 19:03:15.553 | INFO| [http-nio-auto-2-exec-1]     - Completed initialization in 3 ms
+FLASHGUARD_HTTP_BENCHMARK scenario=async-mixed run=0 status=EXCLUDED_WARMUP orders=300 result=D:\code\flashguard-workbench\flashguard\benchmark\results\82b0718d0865a3a8f9ce6a243c9603b0472d40f9\2026-09-28T10-44-16.868955800Z-03e19b72\async-mixed\warmup-excluded
+2026-09-28 19:21:43.397 | WARN| [HikariPool-2:housekeeper]     - HikariPool-2 - Thread starvation or clock leap detected (housekeeper delta=16m33s955ms751?s700ns).
+FLASHGUARD_HTTP_BENCHMARK scenario=async-mixed run=1 status=FAIL orders=335 result=D:\code\flashguard-workbench\flashguard\benchmark\results\82b0718d0865a3a8f9ce6a243c9603b0472d40f9\2026-09-28T10-44-16.868955800Z-03e19b72\async-mixed\run-01
+2026-09-28 20:12:53.756 | INFO| [main]     - Commencing graceful shutdown. Waiting for active requests to complete
+2026-09-28 20:12:53.765 | INFO| [tomcat-shutdown]     - Graceful shutdown complete
+2026-09-28 20:12:58.130 | INFO| [main]     - HikariPool-2 - Shutdown initiated...
+2026-09-28 20:12:58.139 | INFO| [main]     - HikariPool-2 - Shutdown completed.
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 5325 s <<< FAILURE! -- in com.flashguard.perf.RealHttpBenchmarkTest
+[ERROR] com.flashguard.perf.RealHttpBenchmarkTest.repeatableActualHttpComparison -- Time elapsed: 5324 s <<< FAILURE!
+java.lang.AssertionError: 
+[measured correctness/arrival failure stops later rounds; raw evidence=D:\code\flashguard-workbench\flashguard\benchmark\results\82b0718d0865a3a8f9ce6a243c9603b0472d40f9\2026-09-28T10-44-16.868955800Z-03e19b72\async-mixed\run-01] 
+Expecting empty but was: ["k6 threshold/system-error/dropped-iteration gate",
+    "achieved arrivals below 99% of target",
+    "mixed traffic must confirm one order per user pair and reject the other distinct request"]
+	at com.flashguard.perf.RealHttpBenchmarkTest.run(RealHttpBenchmarkTest.java:256)
+	at com.flashguard.perf.RealHttpBenchmarkTest.repeatableActualHttpComparison(RealHttpBenchmarkTest.java:83)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Failures: 
+[ERROR]   RealHttpBenchmarkTest.repeatableActualHttpComparison:83->run:256 [measured correctness/arrival failure stops later rounds; raw evidence=D:\code\flashguard-workbench\flashguard\benchmark\results\82b0718d0865a3a8f9ce6a243c9603b0472d40f9\2026-09-28T10-44-16.868955800Z-03e19b72\async-mixed\run-01] 
+Expecting empty but was: ["k6 threshold/system-error/dropped-iteration gate",
+    "achieved arrivals below 99% of target",
+    "mixed traffic must confirm one order per user pair and reject the other distinct request"]
+[INFO] 
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  01:29 h
+[INFO] Finished at: 2026-09-28T20:13:00+08:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.6:test (default-test) on project flashguard: There are test failures.
+[ERROR] 
+[ERROR] See D:\code\flashguard-workbench\flashguard\target\surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

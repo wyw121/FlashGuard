@@ -1,5 +1,6 @@
 $ErrorActionPreference = 'Stop'
 $repository = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
+$callerDirectory = (Get-Location).Path
 $sandbox = Join-Path ([IO.Path]::GetTempPath()) ('flashguard-wrapper-' + [guid]::NewGuid())
 $project = Join-Path $sandbox 'standalone checkout'
 $scriptDirectory = Join-Path $project 'scripts'
@@ -23,7 +24,7 @@ try {
         & $script
         Assert-Wrapper (-not ($global:wrapperArguments -contains '-s')) "$name requires settings absent from a standalone clone"
         Assert-Wrapper ($global:wrapperCwd -eq $project) "$name runs Maven outside the project"
-        Assert-Wrapper ((Get-Location).Path -eq $repository) "$name did not restore caller location"
+        Assert-Wrapper ((Get-Location).Path -eq $callerDirectory) "$name did not restore caller location"
 
         $settings = Join-Path $sandbox 'custom settings.xml'
         Set-Content $settings '<settings />'

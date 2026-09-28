@@ -1,0 +1,37 @@
+[
+  {
+    "timestamp": "2026-09-28T20:21:43.9155988+08:00",
+    "Id": 507,
+    "Message": "系统正在退出新型待机状态 \r\n\r\n原因: Input Keyboard。"
+  },
+  {
+    "timestamp": "2026-09-28T20:13:23.8616978+08:00",
+    "Id": 506,
+    "Message": "系统正在进入新型待机状态 \r\n\r\n原因: Idle Timeout。"
+  },
+  {
+    "timestamp": "2026-09-28T20:12:51.6185030+08:00",
+    "Id": 507,
+    "Message": "系统正在退出新型待机状态 \r\n\r\n原因: Input Keyboard。"
+  },
+  {
+    "timestamp": "2026-09-28T19:21:39.0607777+08:00",
+    "Id": 506,
+    "Message": "系统正在进入新型待机状态 \r\n\r\n原因: Austerity Battery Drain Budget Exceeded。"
+  },
+  {
+    "timestamp": "2026-09-28T19:21:39.0588888+08:00",
+    "Id": 507,
+    "Message": "系统正在退出新型待机状态 \r\n\r\n原因: Austerity Battery Drain Budget Exceeded。"
+  },
+  {
+    "timestamp": "2026-09-28T19:05:27.1668603+08:00",
+    "Id": 506,
+    "Message": "系统正在进入新型待机状态 \r\n\r\n原因: Idle Timeout。"
+  },
+  {
+    "timestamp": "2026-09-28T18:33:32.4784196+08:00",
+    "Id": 507,
+    "Message": "系统正在退出新型待机状态 \r\n\r\n原因: Lid。"
+  }
+]
