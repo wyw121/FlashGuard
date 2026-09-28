@@ -2,6 +2,8 @@
 
 本报告持续更新。代码存在、组件测试通过、故障验收通过与正式压测通过分别记录。
 
+2026-09-28 补充：[混合用户流量与运行脚本验收](../2026-09-28-completion.md)。mysql-mixed 五轮 PASS；async-mixed 首次被宿主 Modern Standby 中断而 FAIL，接电重跑五轮 PASS。全量 verify：148 项、0 失败/错误、2 项长实验 opt-in 跳过，146 项实际执行通过。保留失败原始数据，新增结果仍只覆盖 10 requests/s 配置。
+
 | 范围 | 已获得证据 | 剩余门槛 |
 | --- | --- | --- |
 | 1 MySQL 基线 / 2 Redis 预占 | 2026-09-17 全量 `mvn verify`：148 tests、0 failures/errors；[正式 HTTP 五轮结果](../../../benchmark/results/fac1c6586b94f107f9c104c16694eae04b29f48c/2026-09-17T12-35-26.631044Z-98e87c79/aggregate.json) 中 MySQL 三场景均 PASS | 仅覆盖配置的 10 requests/s，不是最大容量结论 |

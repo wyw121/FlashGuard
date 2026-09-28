@@ -1,5 +1,7 @@
 # 2026-09-28 方案执行与验收记录
 
+**本轮新增内容验收：PASS。** 同步 / 异步混合流量各五轮通过；全量 Maven verify 为 148 项、0 失败、0 错误、2 项 opt-in 跳过（146 项实际执行通过），另有 4 项 k6 脚本契约测试及 PowerShell 包装器测试通过。首次待机中断的 FAIL 保留，不被重跑改写。
+
 本轮从干净提交 `9ef969b4cfb4d5e6a153eb1be5d68f2d432f1634` 继续，在原有 `codex/stage-2-redis-reservation` 分支工作。先核对方案书与归档结果，再补齐混合流量和可复现运行脚本。没有修改业务运行源码。
 
 ## 进度核对
@@ -40,7 +42,29 @@ README 与历史台账的过时进度、RocketMQ SDK 版本说明、Producer 冷
 
 后续恢复条件：接通电源、保持开盖，以进程作用域临时电源请求阻止空闲待机，结束后释放；不修改永久电源方案。Windows 在 Modern Standby 电池模式下会在睡眠超时后五分钟终止 system/execution 请求，见 [Microsoft PowerSetRequest](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-powersetrequest)。重跑需另建结果目录，保留本次 FAIL。
 
-全量回归：本轮尚未执行，待电源条件恢复后串行执行。
+接电后使用 `scripts/run-awake-validation.ps1 -Mode AsyncMixed` 重跑，五轮全部 **PASS**。启动时干净提交为 `f56e47ad52c849f07287d7a2a7e2fff4bc5d0f00`；源码树指纹与前一次完全相同，仍为 `1528e88f01179e44158c08f9a69ae24a4d980598af4bc3ecad155efded899826`，没有改业务代码或放宽门槛。运行期间临时 system/execution 电源请求成功取得，Maven 成功结束后释放。
+
+重跑保留[原始汇总](../../benchmark/results/f56e47ad52c849f07287d7a2a7e2fff4bc5d0f00/2026-09-28T12-27-18.884356100Z-0d309c48/aggregate.json)、[Maven 日志](2026-09-28/async-mixed-awake-maven.txt)和[JUnit 报告](2026-09-28/async-mixed-awake-junit.txt)。五轮每轮 1801 次请求、901 单、901 次客户端确认、900 次重复购买拒绝；系统错误、dropped iterations、未终态预占、Broker lag、DLQ 均为零。实际订单 RPS 中位数 4.9035，确认延迟 P50/P95/P99 的轮间中位数 203/270/362 ms。
+
+[10 轮原始 summary 交叉核对](2026-09-28/mixed-raw-audit.json)合计 18,008 次请求、9,008 单、9,000 次预期拒绝，逐轮核对原始请求/确认/拒绝计数与 DB/Redis/MQ 不变量。该核对选择首次运行的同步五轮及接电重跑的异步五轮，不修改首次整组 FAIL。两条路径跨运行、供电条件不同，不能将两组延迟直接当作同条件性能优劣结论。
+
+全量回归于 21:00:04 完成，`scripts/run-awake-validation.ps1 -Mode Regression` 执行 Maven verify 并成功打包，耗时 9 分 20 秒：**148 tests / 0 failures / 0 errors / 2 skipped**，即 146 项实际执行通过。两项跳过为需显式开启的 RealHttpBenchmarkTest 和 HistoricalOrdersSqlBenchmarkTest；本轮 mixed HTTP 已另行正式运行，百万 SQL 仍引用 2026-09-13 的历史实验，未在本轮重新测量。真实 RocketMQ 集成 11 项全部执行通过，包含 MySQL Broker retry、Redis 晚到预占恢复、Producer 冷恢复、Consumer 重投、DLQ 和积压恢复。
+
+原始证据：[Maven 全日志](2026-09-28/full-verify-maven.txt)、[逐测试类汇总](2026-09-28/full-verify-results.json)、[JUnit 文本报告目录](2026-09-28/junit/)、[Node 4/4](2026-09-28/k6-contract-tests.txt)、[PowerShell 契约](2026-09-28/wrapper-contract-tests.txt)。自接电重跑至回归结束的[电源事件核对](2026-09-28/awake-power-events.json)没有新的 Modern Standby 进入/退出记录。两次长验证都正常释放临时电源请求。
+
+独立审查无混合流量或计数逻辑阻塞问题。包装器测试的调用目录假设已修复；临时电源包装器进一步用嵌套 finally 保证即使目录恢复失败也释放请求，该版本已用于上述完整回归。最终核对涵盖原始 k6 指标、数据库/MQ 不变量、构建返回码和文档链接。
+
+复现（PowerShell 7、Docker Desktop、Java/Maven，长测接电并保持开盖）：
+
+```powershell
+Set-Location 'D:\code\flashguard-workbench\flashguard'
+node --test benchmark/k6/http-full-path.test.cjs
+pwsh -NoProfile -File scripts/tests/benchmark-wrappers.test.ps1
+pwsh -NoProfile -File scripts/run-awake-validation.ps1 -Mode AsyncMixed
+pwsh -NoProfile -File scripts/run-awake-validation.ps1 -Mode Regression
+```
+
+以上最后两条需串行运行；不要为了复核本次结果同时重复压测。预热不足、轮数不足或资源采样缺失仍为 REVIEW；系统错误、dropped iterations、请求交付不足或不变量失败仍为 FAIL。
 
 ## 结论边界
 

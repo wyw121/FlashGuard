@@ -66,8 +66,10 @@ namespace FlashGuard {
 }
 $lease = [FlashGuard.ValidationPowerLease]::new()
 Write-Host "AC confirmed; temporary system/execution power requests acquired ($Mode)."
-Push-Location $projectRoot
+$locationPushed = $false
 try {
+    Push-Location $projectRoot
+    $locationPushed = $true
     if ($Mode -eq 'Regression') {
         & (Join-Path $PSScriptRoot 'verify-real-chain.ps1')
     } elseif ($Mode -eq 'AsyncMixed') {
@@ -81,7 +83,10 @@ try {
         if ($LASTEXITCODE -ne 0) { throw 'Async mixed validation failed; preserve its raw results.' }
     }
 } finally {
-    Pop-Location
-    $lease.Dispose()
-    Write-Host 'Temporary power requests released; power plan unchanged.'
+    try {
+        if ($locationPushed) { Pop-Location }
+    } finally {
+        $lease.Dispose()
+        Write-Host 'Temporary power requests released; power plan unchanged.'
+    }
 }

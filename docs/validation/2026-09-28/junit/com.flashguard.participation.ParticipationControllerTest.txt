@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.flashguard.participation.ParticipationControllerTest
+-------------------------------------------------------------------------------
+Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.856 s -- in com.flashguard.participation.ParticipationControllerTest

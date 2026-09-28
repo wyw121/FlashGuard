@@ -1,0 +1,7 @@
+Finished. Read benchmark/results or benchmark/datasets/results; preflight is REVIEW, not capacity acceptance.
+Finished. Read benchmark/results or benchmark/datasets/results; preflight is REVIEW, not capacity acceptance.
+PASS: All selected tests and packaging. Inspect reports for exact scope; this is not production capacity acceptance.
+PASS: All selected tests and packaging. Inspect reports for exact scope; this is not production capacity acceptance.
+PASS: selected tests and packaging succeeded. This is not RocketMQ or capacity acceptance.
+PASS: selected tests and packaging succeeded. This is not RocketMQ or capacity acceptance.
+PASS: standalone checkout, custom settings with spaces, missing settings, caller directory restoration.
