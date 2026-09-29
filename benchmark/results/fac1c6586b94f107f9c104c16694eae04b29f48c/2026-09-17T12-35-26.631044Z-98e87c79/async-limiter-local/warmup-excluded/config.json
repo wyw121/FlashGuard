@@ -1,0 +1,23 @@
+{
+  "scenario" : "async-limiter-local",
+  "repetition" : 0,
+  "activityId" : 7037,
+  "initialStock" : 700,
+  "targetRps" : 10,
+  "seconds" : 60,
+  "vus" : 100,
+  "warmupExcluded" : true,
+  "protocolShortfalls" : [ ],
+  "topic" : "fg_perf_72d3f719044941cc94f3e3d14a17691f",
+  "consumerGroup" : "fg_perf_c_72d3f719044941cc94f3e3d14a17691f",
+  "start" : "2026-09-17T14:18:02.913432900Z",
+  "dataSeed" : "activity=7037;users=1000000+iteration;replayModulo=50",
+  "mysqlSettings" : {
+    "version" : "8.4.8",
+    "bufferPoolBytes" : 134217728,
+    "maxConnections" : 151,
+    "transactionIsolation" : "REPEATABLE-READ",
+    "flushLogAtCommit" : 1
+  },
+  "brokerMessagesBefore" : 0
+}

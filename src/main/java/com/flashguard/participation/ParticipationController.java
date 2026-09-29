@@ -37,9 +37,11 @@ public class ParticipationController {
             request.userId(),
             request.requestId()
         ));
-        HttpStatus status = outcome.code() == BusinessCode.REPLAY
-            ? HttpStatus.OK
-            : HttpStatus.CREATED;
+        HttpStatus status = switch (outcome.code()) {
+            case REPLAY -> HttpStatus.OK;
+            case PENDING -> HttpStatus.ACCEPTED;
+            default -> HttpStatus.CREATED;
+        };
         return ResponseEntity.status(status).body(ApiResponse.of(
             outcome.code(),
             ParticipationResult.from(outcome)

@@ -1,0 +1,47 @@
+{
+  "query_block": {
+    "select_id": 1,
+    "cost_info": {
+      "query_cost": "12.65"
+    },
+    "ordering_operation": {
+      "using_filesort": false,
+      "table": {
+        "table_name": "historical_orders",
+        "access_type": "ref",
+        "possible_keys": [
+          "ix_history_user_status_created",
+          "ix_history_activity_status_created"
+        ],
+        "key": "ix_history_user_status_created",
+        "used_key_parts": [
+          "user_id",
+          "status"
+        ],
+        "key_length": "106",
+        "ref": [
+          "const",
+          "const"
+        ],
+        "rows_examined_per_scan": 100,
+        "rows_produced_per_join": 100,
+        "filtered": "100.00",
+        "backward_index_scan": true,
+        "using_index": true,
+        "cost_info": {
+          "read_cost": "2.65",
+          "eval_cost": "10.00",
+          "prefix_cost": "12.65",
+          "data_read_per_join": "48K"
+        },
+        "used_columns": [
+          "id",
+          "activity_id",
+          "user_id",
+          "status",
+          "created_at"
+        ]
+      }
+    }
+  }
+}

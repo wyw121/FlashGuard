@@ -1,0 +1,26 @@
+[
+  {
+    "sourcePath": "src/test/java/com/flashguard/reservation/RedisClusterBucketBenchmarkTest.java",
+    "sha256": "afde57e371f86da3f3ab164d4cb33485b76b6b4bf0e95efb5e1b4d77bec62989"
+  },
+  {
+    "sourcePath": "src/main/resources/redis/reserve_stock.lua",
+    "sha256": "dd8b9f7e4815c0e91774f612c9bc379b0cd98ddc10d2782fab38557542577ba7"
+  },
+  {
+    "sourcePath": "src/main/resources/redis/warmup_stock.lua",
+    "sha256": "05222d79b0cef4beecd78d695d166714617eebe873b16b9f7602a11a2dee1c7c"
+  },
+  {
+    "sourcePath": "src/main/java/com/flashguard/reservation/PendingReservation.java",
+    "sha256": "d08e5f60f48540e774b4cc2363a1319c84c28057cfe4b8d1518a774829e1e0ae"
+  },
+  {
+    "sourcePath": "src/main/java/com/flashguard/reservation/ReservationStatus.java",
+    "sha256": "03246bb8300a45aa3d43e84da81df99a15aab33754d55a3d174854fd618eb1ec"
+  },
+  {
+    "sourcePath": "pom.xml",
+    "sha256": "2b7e927a7ed61894193b235cb6a758ada0104a093cb322c94f7b9af615b497b7"
+  }
+]

@@ -1,0 +1,54 @@
+{
+  "capturedAtUtc": "2026-09-13T11:17:53.6056938Z",
+  "gitBaseRevision": "ece8209ec152395a9a092a214b7eafab443288ed",
+  "workingTreeDirty": true,
+  "revisionCaveat": "Run uses uncommitted working-tree sources, including new benchmark code. Base HEAD alone cannot reproduce it. Sources and SHA256 hashes were captured after the passing run; a full repository release snapshot is not supplied by this evidence directory.",
+  "runtimeReportedByBenchmark": {
+    "clientOs": "Windows 11",
+    "javaVersion": "21.0.9",
+    "clientAvailableProcessors": 12,
+    "redisVersion": "7.4.8"
+  },
+  "dockerInspectedAfterRun": {
+    "serverVersion": "28.3.3",
+    "operatingSystem": "Docker Desktop",
+    "osType": "linux",
+    "architecture": "x86_64",
+    "virtualMachineCpuCount": 12,
+    "virtualMachineMemoryBytes": 16518426624,
+    "kernelVersion": "6.6.87.2-microsoft-standard-WSL2",
+    "redisImageId": "sha256:7ceda270a3137de18c0b3aff75fa0002faa1c2a87e2b25e86978a1c3f20b3b78",
+    "redisImageRepoDigests": []
+  },
+  "benchmarkDeclaredConfiguration": {
+    "primaryCount": 3,
+    "cpuQuotaCoresPerPrimary": 1,
+    "memoryBytesPerPrimary": 268435456,
+    "totalCpuQuotaCores": 3,
+    "totalMemoryBytes": 805306368,
+    "workers": 16,
+    "requestsPerTrial": 5000,
+    "rounds": 5,
+    "trials": 10,
+    "warmupsPerPrimaryPerTrial": 200,
+    "replicas": 0,
+    "persistence": "appendonly no; save disabled",
+    "loadModel": "closed-loop; unique sequential users; userId modulo bucket count; exact per-bucket stock"
+  },
+  "hostIsolation": "No exclusive host-resource isolation is established. Docker VM values were inspected after the run and are not per-container peak usage.",
+  "sourceSnapshot": "source-sha256.json and sources/",
+  "rawEvidenceHashes": [
+    {
+      "file": "stage7-cluster-bucket-ab.json",
+      "sha256": "7f98ea1e6b37451c8b9aa5e7a28a37782f9c6c4522ef88ce0a1db633da23d1cd"
+    },
+    {
+      "file": "stage7-hot-key-baseline.json",
+      "sha256": "354c1a5348adc47814eaf4d7d4b492d9a119a42794c05e10bcd30db0c0c5d614"
+    },
+    {
+      "file": "RedisClusterBucketBenchmarkTest.txt",
+      "sha256": "748cb2ba098fa7de7fe186870acd18e8ee7c1cf7b7795ebe52dff94b7961b1f0"
+    }
+  ]
+}

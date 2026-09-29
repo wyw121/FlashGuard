@@ -1,0 +1,43 @@
+{
+  "query_block": {
+    "select_id": 1,
+    "cost_info": {
+      "query_cost": "6363.14"
+    },
+    "ordering_operation": {
+      "using_filesort": true,
+      "table": {
+        "table_name": "historical_orders",
+        "access_type": "ref",
+        "possible_keys": [
+          "uk_history_activity_user"
+        ],
+        "key": "uk_history_activity_user",
+        "used_key_parts": [
+          "activity_id"
+        ],
+        "key_length": "8",
+        "ref": [
+          "const"
+        ],
+        "rows_examined_per_scan": 18176,
+        "rows_produced_per_join": 1817,
+        "filtered": "10.00",
+        "cost_info": {
+          "read_cost": "4545.54",
+          "eval_cost": "181.76",
+          "prefix_cost": "6363.14",
+          "data_read_per_join": "880K"
+        },
+        "used_columns": [
+          "id",
+          "activity_id",
+          "user_id",
+          "status",
+          "created_at"
+        ],
+        "attached_condition": "(`flashguard_sql_experiment`.`historical_orders`.`status` = 'CONFIRMED')"
+      }
+    }
+  }
+}

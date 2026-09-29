@@ -1,0 +1,1279 @@
+diff --git a/pom.xml b/pom.xml
+index 0de2497..5ebb1fc 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -26,6 +26,12 @@
+ 
+     <dependencyManagement>
+         <dependencies>
++            <!-- Align with Commons Compress used by Testcontainers; MQ's older transitive IO breaks tar extraction. -->
++            <dependency>
++                <groupId>commons-io</groupId>
++                <artifactId>commons-io</artifactId>
++                <version>2.20.0</version>
++            </dependency>
+             <dependency>
+                 <groupId>org.testcontainers</groupId>
+                 <artifactId>testcontainers-bom</artifactId>
+@@ -37,6 +43,34 @@
+     </dependencyManagement>
+ 
+     <dependencies>
++        <dependency>
++            <groupId>org.apache.rocketmq</groupId>
++            <artifactId>rocketmq-broker</artifactId>
++            <version>5.3.2</version>
++            <scope>test</scope>
++            <exclusions><exclusion><groupId>io.github.aliyunmq</groupId><artifactId>rocketmq-shaded-slf4j-api-bridge</artifactId></exclusion></exclusions>
++        </dependency>
++        <dependency>
++            <groupId>org.apache.rocketmq</groupId>
++            <artifactId>rocketmq-namesrv</artifactId>
++            <version>5.3.2</version>
++            <scope>test</scope>
++            <exclusions><exclusion><groupId>io.github.aliyunmq</groupId><artifactId>rocketmq-shaded-slf4j-api-bridge</artifactId></exclusion></exclusions>
++        </dependency>
++        <dependency>
++            <groupId>org.apache.rocketmq</groupId>
++            <artifactId>rocketmq-client</artifactId>
++            <version>5.3.2</version>
++        </dependency>
++        <dependency>
++            <groupId>org.apache.rocketmq</groupId>
++            <artifactId>rocketmq-tools</artifactId>
++            <version>5.3.2</version>
++        </dependency>
++        <dependency>
++            <groupId>com.github.ben-manes.caffeine</groupId>
++            <artifactId>caffeine</artifactId>
++        </dependency>
+         <dependency>
+             <groupId>org.springframework.boot</groupId>
+             <artifactId>spring-boot-starter-web</artifactId>
+diff --git a/src/main/java/com/flashguard/FlashGuardApplication.java b/src/main/java/com/flashguard/FlashGuardApplication.java
+index d29629c..dab7a0a 100644
+--- a/src/main/java/com/flashguard/FlashGuardApplication.java
++++ b/src/main/java/com/flashguard/FlashGuardApplication.java
+@@ -10,4 +10,3 @@ public class FlashGuardApplication {
+         SpringApplication.run(FlashGuardApplication.class, args);
+     }
+ }
+-
+diff --git a/src/main/java/com/flashguard/activity/ActivityMapper.java b/src/main/java/com/flashguard/activity/ActivityMapper.java
+index 3dc834f..bfd6ae6 100644
+--- a/src/main/java/com/flashguard/activity/ActivityMapper.java
++++ b/src/main/java/com/flashguard/activity/ActivityMapper.java
+@@ -11,6 +11,8 @@ import org.apache.ibatis.annotations.Select;
+ 
+ @Mapper
+ public interface ActivityMapper {
++    @Select("SELECT id FROM activity WHERE id > #{afterId} ORDER BY id LIMIT #{limit}")
++    java.util.List<Long> findIdsAfter(@Param("afterId") long afterId, @Param("limit") int limit);
+ 
+     @Select("""
+         SELECT a.id,
+diff --git a/src/main/java/com/flashguard/activity/ActivityQueryService.java b/src/main/java/com/flashguard/activity/ActivityQueryService.java
+index 7f4e746..adec00f 100644
+--- a/src/main/java/com/flashguard/activity/ActivityQueryService.java
++++ b/src/main/java/com/flashguard/activity/ActivityQueryService.java
+@@ -1,20 +1,17 @@
+ package com.flashguard.activity;
+ 
+-import com.flashguard.shared.error.BusinessCode;
+-import com.flashguard.shared.error.BusinessException;
+ import org.springframework.stereotype.Service;
+ 
+ @Service
+ public class ActivityQueryService {
+ 
+-    private final ActivityMapper activityMapper;
++    private final ActivityCacheService activityCacheService;
+ 
+-    public ActivityQueryService(ActivityMapper activityMapper) {
+-        this.activityMapper = activityMapper;
++    public ActivityQueryService(ActivityCacheService activityCacheService) {
++        this.activityCacheService = activityCacheService;
+     }
+ 
+     public ActivityView findById(long activityId) {
+-        return activityMapper.findById(activityId)
+-            .orElseThrow(() -> new BusinessException(BusinessCode.ACTIVITY_NOT_FOUND));
++        return activityCacheService.findById(activityId);
+     }
+ }
+diff --git a/src/main/java/com/flashguard/order/OrderMapper.java b/src/main/java/com/flashguard/order/OrderMapper.java
+index 3658d50..e026170 100644
+--- a/src/main/java/com/flashguard/order/OrderMapper.java
++++ b/src/main/java/com/flashguard/order/OrderMapper.java
+@@ -99,4 +99,11 @@ public interface OrderMapper {
+         @Param("order") OrderRecord order,
+         @Param("reservationId") String reservationId
+     );
++
++    @Select("""
++        SELECT COUNT(*)
++        FROM orders
++        WHERE activity_id = #{activityId}
++        """)
++    long countByActivity(@Param("activityId") long activityId);
+ }
+diff --git a/src/main/java/com/flashguard/order/ReservationConsumerService.java b/src/main/java/com/flashguard/order/ReservationConsumerService.java
+index 1f47759..4cebcf0 100644
+--- a/src/main/java/com/flashguard/order/ReservationConsumerService.java
++++ b/src/main/java/com/flashguard/order/ReservationConsumerService.java
+@@ -134,10 +134,6 @@ public class ReservationConsumerService {
+     }
+ 
+     private OrderRecord consumeByCreateOrder(StockReservationRecord reservation, String messageKey) {
+-        if (stockMapper.decrementIfAvailable(reservation.activityId()) != 1) {
+-            throw new IllegalStateException("Stock is no longer available: " + reservation.activityId());
+-        }
+-
+         OrderRecord order = buildOrder(reservation);
+         try {
+             orderMapper.insertWithReservation(order, reservation.reservationId());
+@@ -148,6 +144,11 @@ public class ReservationConsumerService {
+             return existingOrder;
+         }
+ 
++        // Insert first so a duplicate order never consumes another unit of inventory.
++        // Both statements remain in consumeReservation's transaction: stock failure rolls back the insert.
++        if (stockMapper.decrementIfAvailable(reservation.activityId()) != 1) {
++            throw new IllegalStateException("Stock is no longer available: " + reservation.activityId());
++        }
+         reservationService.markAsConfirmed(reservation.reservationId(), messageKey);
+         return order;
+     }
+diff --git a/src/main/java/com/flashguard/participation/ParticipationService.java b/src/main/java/com/flashguard/participation/ParticipationService.java
+index fcdf4c9..ac499e8 100644
+--- a/src/main/java/com/flashguard/participation/ParticipationService.java
++++ b/src/main/java/com/flashguard/participation/ParticipationService.java
+@@ -1,5 +1,9 @@
+ package com.flashguard.participation;
+ 
++import com.flashguard.mq.ReservationMessagePublisher;
++import org.springframework.beans.factory.ObjectProvider;
++import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.beans.factory.annotation.Value;
+ import com.flashguard.order.OrderMapper;
+ import com.flashguard.order.OrderRecord;
+ import com.flashguard.reservation.PendingReservation;
+@@ -25,27 +29,61 @@ public class ParticipationService {
+     private final OrderMapper orderMapper;
+     private final RedisReservationStore reservationStore;
+     private final StockReservationService stockReservationService;
++    private final ParticipationRateLimiter rateLimiter;
++    private final ReservationMessagePublisher publisher;
++    private final String mode;
+ 
+-    public ParticipationService(
+-        ParticipationTransaction transaction,
+-        OrderMapper orderMapper,
+-        RedisReservationStore reservationStore,
+-        StockReservationService stockReservationService
+-    ) {
++    public ParticipationService(ParticipationTransaction transaction, OrderMapper orderMapper,
++        RedisReservationStore reservationStore, StockReservationService stockReservationService,
++        ParticipationRateLimiter rateLimiter) {
++        this(transaction, orderMapper, reservationStore, stockReservationService, rateLimiter,
++            (ReservationMessagePublisher) null, "mysql");
++    }
++
++    @Autowired
++    public ParticipationService(ParticipationTransaction transaction, OrderMapper orderMapper,
++        RedisReservationStore reservationStore, StockReservationService stockReservationService,
++        ParticipationRateLimiter rateLimiter, ObjectProvider<ReservationMessagePublisher> publisher,
++        @Value("${flashguard.participation.mode:mysql}") String mode) {
++        this(transaction,orderMapper,reservationStore,stockReservationService,rateLimiter,publisher.getIfAvailable(),mode);
++    }
++
++    public ParticipationService(ParticipationTransaction transaction, OrderMapper orderMapper,
++        RedisReservationStore reservationStore, StockReservationService stockReservationService,
++        ParticipationRateLimiter rateLimiter, ReservationMessagePublisher publisher, String mode) {
++        if (!"mysql".equals(mode) && !"async".equals(mode)) throw new IllegalArgumentException("Participation mode must be mysql or async");
+         this.transaction = transaction;
+         this.orderMapper = orderMapper;
+         this.reservationStore = reservationStore;
+         this.stockReservationService = stockReservationService;
++        this.rateLimiter = rateLimiter;
++        this.publisher = publisher;
++        this.mode = mode;
+     }
+-
+     public ParticipationOutcome participate(ParticipationCommand command) {
++        try {
++            return participateInternal(command);
++        } finally {
++            CorrelationContext.clearBusinessContext();
++        }
++    }
++
++    private ParticipationOutcome participateInternal(ParticipationCommand command) {
++        rateLimiter.ensureAllowed(command.activityId(), command.userId());
+         CorrelationContext.setRequestId(command.requestId());
+         LOGGER.info("Handling participation request for activity={} user={}", command.activityId(), command.userId());
+         OrderRecord replay = orderMapper.findByRequestId(command.requestId()).orElse(null);
+         if (replay != null) {
+-            return ParticipationOutcome.replay(replay);
++            return replayForCommand(command, replay);
+         }
+ 
++        if ("mysql".equals(mode)) return executeLegacyPath(command);
++        if (publisher == null) throw new BusinessException(BusinessCode.SERVICE_UNAVAILABLE);
++
++        stockReservationService.findByRequestId(command.requestId()).ifPresent(existing -> {
++            ensureRequestIdentity(command, existing.activityId(), existing.userId());
++        });
++
+         ReservationResult reservationResult;
+         try {
+             reservationResult = reservationStore.reserve(
+@@ -54,7 +92,7 @@ public class ParticipationService {
+                 command.requestId()
+             );
+         } catch (ReservationStoreException exception) {
+-            return executeLegacyPath(command);
++            throw new BusinessException(BusinessCode.SERVICE_UNAVAILABLE);
+         }
+ 
+         switch (reservationResult.decision()) {
+@@ -74,13 +112,11 @@ public class ParticipationService {
+                 throw new BusinessException(BusinessCode.ACTIVITY_ENDED);
+             }
+             case NOT_READY -> {
+-                return executeLegacyPath(command);
++                throw new BusinessException(BusinessCode.SERVICE_UNAVAILABLE);
+             }
+             default -> {
+                 throw new BusinessException(BusinessCode.INTERNAL_ERROR);
+             }
+-        } finally {
+-            CorrelationContext.clearBusinessContext();
+         }
+     }
+ 
+@@ -88,15 +124,7 @@ public class ParticipationService {
+         String requestId,
+         PendingReservation pendingReservation
+     ) {
+-        StockReservationRecord reservation = stockReservationService.findByRequestId(requestId)
+-            .orElseGet(() -> {
+-                try {
+-                    return stockReservationService.createPending(pendingReservation);
+-                } catch (DuplicateKeyException exception) {
+-                    return stockReservationService.findByRequestId(requestId)
+-                        .orElseThrow(() -> exception);
+-                }
+-            });
++        StockReservationRecord reservation = publisher.publish(pendingReservation);
+         CorrelationContext.setReservationId(reservation.reservationId());
+         LOGGER.info("Created/returned reservation for requestId={} reservationId={} status={}",
+             requestId,
+@@ -108,13 +136,24 @@ public class ParticipationService {
+         );
+     }
+ 
++    private ParticipationOutcome replayForCommand(ParticipationCommand command, OrderRecord order) {
++        ensureRequestIdentity(command, order.activityId(), order.userId());
++        return ParticipationOutcome.replay(order);
++    }
++
++    private void ensureRequestIdentity(ParticipationCommand command, long activityId, long userId) {
++        if (command.activityId() != activityId || command.userId() != userId) {
++            throw new BusinessException(BusinessCode.DUPLICATE_PURCHASE);
++        }
++    }
++
+     private ParticipationOutcome executeLegacyPath(ParticipationCommand command) {
+         try {
+             return transaction.execute(command);
+         } catch (DuplicateKeyException duplicate) {
+             OrderRecord replay = orderMapper.findByRequestId(command.requestId()).orElse(null);
+             if (replay != null) {
+-                return ParticipationOutcome.replay(replay);
++                return replayForCommand(command, replay);
+             }
+             if (orderMapper.findByActivityAndUser(command.activityId(), command.userId()).isPresent()) {
+                 throw new BusinessException(BusinessCode.DUPLICATE_PURCHASE);
+diff --git a/src/main/java/com/flashguard/participation/ParticipationTransaction.java b/src/main/java/com/flashguard/participation/ParticipationTransaction.java
+index 0037e5c..78936f6 100644
+--- a/src/main/java/com/flashguard/participation/ParticipationTransaction.java
++++ b/src/main/java/com/flashguard/participation/ParticipationTransaction.java
+@@ -55,6 +55,9 @@ public class ParticipationTransaction {
+     public ParticipationOutcome execute(ParticipationCommand command) {
+         OrderRecord replay = orderMapper.findByRequestId(command.requestId()).orElse(null);
+         if (replay != null) {
++            if (replay.activityId() != command.activityId() || replay.userId() != command.userId()) {
++                throw new BusinessException(BusinessCode.DUPLICATE_PURCHASE);
++            }
+             return ParticipationOutcome.replay(replay);
+         }
+ 
+diff --git a/src/main/java/com/flashguard/reservation/RedisReservationStore.java b/src/main/java/com/flashguard/reservation/RedisReservationStore.java
+index 945d692..f097764 100644
+--- a/src/main/java/com/flashguard/reservation/RedisReservationStore.java
++++ b/src/main/java/com/flashguard/reservation/RedisReservationStore.java
+@@ -6,6 +6,7 @@ import java.util.List;
+ import java.util.Objects;
+ import java.util.Optional;
+ import java.util.UUID;
++import java.util.function.Supplier;
+ 
+ import com.fasterxml.jackson.core.JsonProcessingException;
+ import com.fasterxml.jackson.databind.ObjectMapper;
+@@ -28,6 +29,9 @@ public class RedisReservationStore {
+     private static final DefaultRedisScript<List> RESERVE_SCRIPT = script(
+         "redis/reserve_stock.lua"
+     );
++    private static final DefaultRedisScript<List> RELEASE_SCRIPT = script(
++        "redis/release_stock.lua"
++    );
+ 
+     private final StringRedisTemplate redis;
+     private final long reservationTimeoutMillis;
+@@ -149,6 +153,81 @@ public class RedisReservationStore {
+         return Optional.of(reservation);
+     }
+ 
++    /** Releases only the exact Redis identity for which durable cancellation ownership was acquired. */
++    public boolean releaseExpected(PendingReservation expected) {
++        long activityId = Long.parseLong(expected.activityId());
++        requirePositiveId(activityId, "activityId");
++        List<?> response = execute(RELEASE_SCRIPT, keys(activityId), "RELEASE", expected.activityId(),
++            expected.requestId(), expected.reservationId(), expected.userId());
++        return switch (responseCode(response)) {
++            case "RELEASED", "ALREADY_RELEASED" -> true;
++            case "NOT_FOUND", "NOT_READY" -> false;
++            default -> throw new ReservationStateException("Cannot release mismatched or invalid Redis reservation");
++        };
++    }
++
++    public boolean releaseByRequestId(long activityId, String requestId) {
++        if (activityId <= 0 || requestId == null || requestId.isBlank()) {
++            throw new IllegalArgumentException("Invalid release identity");
++        }
++        List<?> response = execute(
++            RELEASE_SCRIPT,
++            keys(activityId),
++            "RELEASE",
++            Long.toString(activityId),
++            requestId
++        );
++        String code = responseCode(response);
++        return switch (code) {
++            case "RELEASED", "ALREADY_RELEASED" -> true;
++            case "NOT_FOUND", "NOT_READY" -> false;
++            case "STATE_ERROR" -> throw new ReservationStoreException(
++                "Cannot release redis reservation: " + code
++            );
++            default -> throw new ReservationStateException("Unexpected release result: " + code);
++        };
++    }
++
++    public long countPendingReservations(long activityId) {
++        requirePositiveId(activityId, "activityId");
++        String key = keyPrefix(activityId) + "pending";
++        return executeStorage(() -> {
++            Long size = redis.opsForZSet().size(key);
++            return size == null ? 0L : size;
++        }, "count pending redis reservations");
++    }
++
++    public List<PendingReservation> findExpiredReservations(long activityId, long cutoff, long offset, int limit) {
++        var requestIds = findExpiredRequestIds(activityId, cutoff, offset, limit);
++        java.util.ArrayList<PendingReservation> records = new java.util.ArrayList<>();
++        for (String requestId : requestIds) {
++            findByRequestId(activityId, requestId).ifPresent(records::add);
++        }
++        return records;
++    }
++
++    public List<String> findExpiredRequestIds(long activityId, long cutoff, long offset, int limit) {
++        requirePositiveId(activityId, "activityId");
++        if (offset < 0 || limit <= 0) throw new IllegalArgumentException("Invalid scan page");
++        var requestIds = executeStorage(() -> redis.opsForZSet().rangeByScore(
++            keyPrefix(activityId) + "pending", 0, cutoff, offset, limit), "scan expired redis reservations");
++        return requestIds == null ? List.of() : List.copyOf(requestIds);
++    }
++
++    public Long getAvailableStock(long activityId) {
++        requirePositiveId(activityId, "activityId");
++        String key = keyPrefix(activityId) + "stock";
++        Object value = executeStorage(() -> redis.opsForHash().get(key, "availableStock"), "read redis stock");
++        if (value == null) {
++            return null;
++        }
++        try {
++            return Long.parseLong(value.toString());
++        } catch (NumberFormatException exception) {
++            throw new ReservationStateException("Invalid redis availableStock value", exception);
++        }
++    }
++
+     private List<?> execute(
+         DefaultRedisScript<List> script,
+         List<String> keys,
+@@ -167,6 +246,14 @@ public class RedisReservationStore {
+         }
+     }
+ 
++    private <T> T executeStorage(Supplier<T> supplier, String message) {
++        try {
++            return supplier.get();
++        } catch (DataAccessException exception) {
++            throw new ReservationStoreException(message, exception);
++        }
++    }
++
+     private PendingReservation decode(String json) {
+         try {
+             PendingReservation reservation = objectMapper.readValue(json, PendingReservation.class);
+@@ -198,7 +285,8 @@ public class RedisReservationStore {
+             prefix + "stock",
+             prefix + "requests",
+             prefix + "users",
+-            prefix + "pending"
++            prefix + "pending",
++            prefix + "released"
+         );
+     }
+ 
+diff --git a/src/main/java/com/flashguard/reservation/ReservationWarmupService.java b/src/main/java/com/flashguard/reservation/ReservationWarmupService.java
+index 6389e40..a5dbf21 100644
+--- a/src/main/java/com/flashguard/reservation/ReservationWarmupService.java
++++ b/src/main/java/com/flashguard/reservation/ReservationWarmupService.java
+@@ -1,23 +1,25 @@
+ package com.flashguard.reservation;
+ 
+-import com.flashguard.activity.ActivityQueryService;
++import com.flashguard.activity.ActivityMapper;
+ import org.springframework.stereotype.Service;
+ 
+ @Service
+ public class ReservationWarmupService {
+ 
+-    private final ActivityQueryService activityQueryService;
++    private final ActivityMapper activityMapper;
+     private final RedisReservationStore reservationStore;
+ 
+     public ReservationWarmupService(
+-        ActivityQueryService activityQueryService,
++        ActivityMapper activityMapper,
+         RedisReservationStore reservationStore
+     ) {
+-        this.activityQueryService = activityQueryService;
++        this.activityMapper = activityMapper;
+         this.reservationStore = reservationStore;
+     }
+ 
+     public WarmUpResult warmUp(long activityId) {
+-        return reservationStore.warmUp(activityQueryService.findById(activityId));
++        return reservationStore.warmUp(activityMapper.findById(activityId)
++            .orElseThrow(() -> new com.flashguard.shared.error.BusinessException(
++                com.flashguard.shared.error.BusinessCode.ACTIVITY_NOT_FOUND)));
+     }
+ }
+diff --git a/src/main/java/com/flashguard/reservation/StockReservationMapper.java b/src/main/java/com/flashguard/reservation/StockReservationMapper.java
+index de9b136..d4f726f 100644
+--- a/src/main/java/com/flashguard/reservation/StockReservationMapper.java
++++ b/src/main/java/com/flashguard/reservation/StockReservationMapper.java
+@@ -1,6 +1,7 @@
+ package com.flashguard.reservation;
+ 
+ import java.time.LocalDateTime;
++import java.util.List;
+ import java.util.Optional;
+ 
+ import org.apache.ibatis.annotations.Arg;
+@@ -190,4 +191,194 @@ public interface StockReservationMapper {
+         WHERE status IN ('PENDING', 'MQ_COMMITTED')
+         """)
+     long countMqBacklog();
+-}
++
++    @Select("""
++        SELECT id,
++               reservation_id,
++               activity_id,
++               user_id,
++               request_id,
++               status,
++               message_key,
++               expire_at,
++               created_at,
++               updated_at
++        FROM stock_reservation
++        WHERE status IN ('PENDING', 'MQ_COMMITTED')
++        ORDER BY updated_at ASC
++        LIMIT #{limit}
++        """)
++    @ConstructorArgs({
++        @Arg(column = "id", javaType = long.class, id = true),
++        @Arg(column = "reservation_id", javaType = String.class),
++        @Arg(column = "activity_id", javaType = long.class),
++        @Arg(column = "user_id", javaType = long.class),
++        @Arg(column = "request_id", javaType = String.class),
++        @Arg(column = "status", javaType = StockReservationStatus.class),
++        @Arg(column = "message_key", javaType = String.class),
++        @Arg(column = "expire_at", javaType = LocalDateTime.class),
++        @Arg(column = "created_at", javaType = LocalDateTime.class),
++        @Arg(column = "updated_at", javaType = LocalDateTime.class)
++    })
++    List<StockReservationRecord> findConsumable(@Param("limit") int limit);
++
++    @Select("""
++        SELECT id,
++               reservation_id,
++               activity_id,
++               user_id,
++               request_id,
++               status,
++               message_key,
++               expire_at,
++               created_at,
++               updated_at
++        FROM stock_reservation
++        WHERE status IN ('PENDING', 'MQ_COMMITTED', 'CANCEL_PENDING', 'COMPENSATION_FAILED')
++          AND expire_at <= #{expireBefore}
++        ORDER BY updated_at ASC, id ASC
++        LIMIT #{limit}
++        """)
++    @ConstructorArgs({
++        @Arg(column = "id", javaType = long.class, id = true),
++        @Arg(column = "reservation_id", javaType = String.class),
++        @Arg(column = "activity_id", javaType = long.class),
++        @Arg(column = "user_id", javaType = long.class),
++        @Arg(column = "request_id", javaType = String.class),
++        @Arg(column = "status", javaType = StockReservationStatus.class),
++        @Arg(column = "message_key", javaType = String.class),
++        @Arg(column = "expire_at", javaType = LocalDateTime.class),
++        @Arg(column = "created_at", javaType = LocalDateTime.class),
++        @Arg(column = "updated_at", javaType = LocalDateTime.class)
++    })
++    List<StockReservationRecord> findExpiredConsumable(
++        @Param("expireBefore") LocalDateTime expireBefore,
++        @Param("limit") int limit
++    );
++
++    @Update("""
++        UPDATE stock_reservation
++        SET status = 'CANCEL_PENDING',
++            message_key = COALESCE(message_key, #{messageKey}),
++            updated_at = CURRENT_TIMESTAMP(6)
++        WHERE reservation_id = #{reservationId}
++          AND status IN ('PENDING', 'MQ_COMMITTED', 'CANCEL_PENDING', 'COMPENSATION_FAILED')
++          AND NOT EXISTS (SELECT 1 FROM orders o WHERE o.reservation_id = stock_reservation.reservation_id)
++        """)
++    int markAsCancelPending(
++        @Param("reservationId") String reservationId,
++        @Param("messageKey") String messageKey
++    );
++
++    @Update("""
++        UPDATE stock_reservation
++        SET status = 'CANCELLED',
++            message_key = COALESCE(message_key, #{messageKey}),
++            updated_at = CURRENT_TIMESTAMP(6)
++        WHERE reservation_id = #{reservationId}
++          AND status = 'CANCEL_PENDING'
++        """)
++    int markAsCancelled(
++        @Param("reservationId") String reservationId,
++        @Param("messageKey") String messageKey
++    );
++
++    @Update("""
++        UPDATE stock_reservation
++        SET status = 'COMPENSATION_FAILED',
++            message_key = COALESCE(message_key, #{messageKey}),
++            updated_at = CURRENT_TIMESTAMP(6)
++        WHERE reservation_id = #{reservationId}
++          AND status = 'CANCEL_PENDING'
++        """)
++    int markAsCompensationFailed(
++        @Param("reservationId") String reservationId,
++        @Param("messageKey") String messageKey
++    );
++
++    @Select("""
++        SELECT COUNT(*)
++        FROM stock_reservation
++        WHERE activity_id = #{activityId}
++        """)
++    long countByActivity(@Param("activityId") long activityId);
++
++    @Select("""
++        SELECT COUNT(*)
++        FROM stock_reservation
++        WHERE activity_id = #{activityId}
++          AND status IN ('PENDING', 'MQ_COMMITTED', 'CANCEL_PENDING', 'COMPENSATION_FAILED')
++        """)
++    long countOpenReservations(@Param("activityId") long activityId);
++
++    @Select("""
++        SELECT COUNT(*)
++        FROM stock_reservation
++        WHERE activity_id = #{activityId}
++          AND status = 'CONFIRMED'
++        """)
++    long countConfirmedByActivity(@Param("activityId") long activityId);
++
++    @Select("""
++        SELECT COUNT(*)
++        FROM stock_reservation sr
++        LEFT JOIN orders o ON o.reservation_id = sr.reservation_id
++        WHERE sr.activity_id = #{activityId}
++          AND sr.status = 'CONFIRMED'
++          AND o.reservation_id IS NULL
++        """)
++    long countConfirmedWithoutOrder(@Param("activityId") long activityId);
++    @Select("""
++        SELECT 0 AS id, reservation_id, activity_id, user_id, request_id, status,
++               reservation_id AS message_key, expire_at, created_at, updated_at
++        FROM reservation_cancellation_fence WHERE reservation_id = #{reservationId}
++        """)
++    @org.apache.ibatis.annotations.Results(id = "cancellationFence")
++    @ConstructorArgs({
++        @Arg(column = "id", javaType = long.class),
++        @Arg(column = "reservation_id", javaType = String.class, id = true),
++        @Arg(column = "activity_id", javaType = long.class),
++        @Arg(column = "user_id", javaType = long.class),
++        @Arg(column = "request_id", javaType = String.class),
++        @Arg(column = "status", javaType = StockReservationStatus.class),
++        @Arg(column = "message_key", javaType = String.class),
++        @Arg(column = "expire_at", javaType = LocalDateTime.class),
++        @Arg(column = "created_at", javaType = LocalDateTime.class),
++        @Arg(column = "updated_at", javaType = LocalDateTime.class)
++    })
++    Optional<StockReservationRecord> findCancellationFence(@Param("reservationId") String reservationId);
++
++    @Select("""
++        SELECT 0 AS id, reservation_id, activity_id, user_id, request_id, status,
++               reservation_id AS message_key, expire_at, created_at, updated_at
++        FROM reservation_cancellation_fence WHERE reservation_id = #{reservationId} FOR UPDATE
++        """)
++    @org.apache.ibatis.annotations.ResultMap("cancellationFence")
++    Optional<StockReservationRecord> findCancellationFenceForUpdate(@Param("reservationId") String reservationId);
++
++    @Insert("""
++        INSERT INTO reservation_cancellation_fence(reservation_id, activity_id, user_id, request_id, expire_at, status)
++        VALUES (#{reservationId}, #{activityId}, #{userId}, #{requestId}, #{expireAt}, 'CANCEL_PENDING')
++        """)
++    void insertCancellationFence(StockReservationRecord fence);
++
++    @Select("""
++        SELECT 0 AS id, reservation_id, activity_id, user_id, request_id, status,
++               reservation_id AS message_key, expire_at, created_at, updated_at
++        FROM reservation_cancellation_fence WHERE status = 'CANCEL_PENDING'
++        ORDER BY updated_at, reservation_id LIMIT #{limit}
++        """)
++    @org.apache.ibatis.annotations.ResultMap("cancellationFence")
++    List<StockReservationRecord> findPendingCancellationFences(@Param("limit") int limit);
++
++    @Update("""
++        UPDATE reservation_cancellation_fence SET status = 'CANCELLED', updated_at = CURRENT_TIMESTAMP(6)
++        WHERE reservation_id = #{reservationId} AND status = 'CANCEL_PENDING'
++        """)
++    int completeCancellationFence(@Param("reservationId") String reservationId);
++
++    @Update("""
++        UPDATE reservation_cancellation_fence SET updated_at = CURRENT_TIMESTAMP(6)
++        WHERE reservation_id = #{reservationId} AND status = 'CANCEL_PENDING'
++        """)
++    int touchCancellationFence(@Param("reservationId") String reservationId);}
+diff --git a/src/main/java/com/flashguard/reservation/StockReservationService.java b/src/main/java/com/flashguard/reservation/StockReservationService.java
+index 2afb20b..8d2868e 100644
+--- a/src/main/java/com/flashguard/reservation/StockReservationService.java
++++ b/src/main/java/com/flashguard/reservation/StockReservationService.java
+@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
+ import java.time.ZoneOffset;
+ import java.util.Optional;
+ import java.util.Objects;
++import java.util.List;
+ 
+ import org.springframework.stereotype.Service;
+ import org.springframework.transaction.annotation.Transactional;
+@@ -28,6 +29,10 @@ public class StockReservationService {
+         return reservation;
+     }
+ 
++    public Optional<StockReservationRecord> findCancellationFence(String reservationId) {
++        return reservationMapper.findCancellationFence(reservationId);
++    }
++
+     public Optional<StockReservationRecord> findByRequestId(String requestId) {
+         if (requestId == null || requestId.isBlank()) {
+             return Optional.empty();
+@@ -54,6 +59,58 @@ public class StockReservationService {
+         return reservationMapper.countMqBacklog();
+     }
+ 
++    public List<StockReservationRecord> findConsumable(int limit) {
++        return reservationMapper.findConsumable(limit);
++    }
++
++    public List<StockReservationRecord> findExpiredConsumable(LocalDateTime cutoff, int limit) {
++        return reservationMapper.findExpiredConsumable(cutoff, limit);
++    }
++
++    public int markAsCancelPending(String reservationId) {
++        return markAsCancelPending(reservationId, null);
++    }
++
++    public int markAsCancelPending(String reservationId, String messageKey) {
++        return reservationMapper.markAsCancelPending(reservationId, messageKey);
++    }
++
++    public int markAsCancelled(String reservationId, String messageKey) {
++        return reservationMapper.markAsCancelled(reservationId, messageKey);
++    }
++
++    public int markAsCompensationFailed(String reservationId, String messageKey) {
++        return reservationMapper.markAsCompensationFailed(reservationId, messageKey);
++    }
++
++    public long countByActivity(long activityId) {
++        if (activityId <= 0) {
++            return 0L;
++        }
++        return reservationMapper.countByActivity(activityId);
++    }
++
++    public long countOpenReservations(long activityId) {
++        if (activityId <= 0) {
++            return 0L;
++        }
++        return reservationMapper.countOpenReservations(activityId);
++    }
++
++    public long countConfirmedByActivity(long activityId) {
++        if (activityId <= 0) {
++            return 0L;
++        }
++        return reservationMapper.countConfirmedByActivity(activityId);
++    }
++
++    public long countConfirmedWithoutOrder(long activityId) {
++        if (activityId <= 0) {
++            return 0L;
++        }
++        return reservationMapper.countConfirmedWithoutOrder(activityId);
++    }
++
+     public StockReservationRecord toPendingRecord(PendingReservation pendingReservation) {
+         Objects.requireNonNull(pendingReservation, "pendingReservation");
+         long activityId = Long.parseLong(pendingReservation.activityId());
+diff --git a/src/main/java/com/flashguard/shared/error/BusinessCode.java b/src/main/java/com/flashguard/shared/error/BusinessCode.java
+index 10466f0..3822ae1 100644
+--- a/src/main/java/com/flashguard/shared/error/BusinessCode.java
++++ b/src/main/java/com/flashguard/shared/error/BusinessCode.java
+@@ -14,6 +14,8 @@ public enum BusinessCode {
+     DUPLICATE_PURCHASE("User already participated in this activity"),
+     PARTICIPATION_NOT_FOUND("Participation result not found"),
+     ORDER_NOT_FOUND("Order not found"),
++    THROTTLED("Request frequency is too high"),
++    SERVICE_UNAVAILABLE("Service is temporarily unavailable"),
+     INTERNAL_ERROR("Internal server error");
+ 
+     private final String defaultMessage;
+diff --git a/src/main/java/com/flashguard/shared/error/GlobalExceptionHandler.java b/src/main/java/com/flashguard/shared/error/GlobalExceptionHandler.java
+index f526f63..14d9588 100644
+--- a/src/main/java/com/flashguard/shared/error/GlobalExceptionHandler.java
++++ b/src/main/java/com/flashguard/shared/error/GlobalExceptionHandler.java
+@@ -74,6 +74,8 @@ public class GlobalExceptionHandler {
+             case ACTIVITY_NOT_FOUND, PARTICIPATION_NOT_FOUND, ORDER_NOT_FOUND -> HttpStatus.NOT_FOUND;
+             case ACTIVITY_NOT_STARTED, ACTIVITY_ENDED, SOLD_OUT, DUPLICATE_PURCHASE ->
+                 HttpStatus.CONFLICT;
++            case THROTTLED -> HttpStatus.TOO_MANY_REQUESTS;
++            case SERVICE_UNAVAILABLE -> HttpStatus.SERVICE_UNAVAILABLE;
+             case PENDING -> HttpStatus.ACCEPTED;
+             case VALIDATION_ERROR -> HttpStatus.BAD_REQUEST;
+             case METHOD_NOT_ALLOWED -> HttpStatus.METHOD_NOT_ALLOWED;
+diff --git a/src/main/java/com/flashguard/shared/observability/CorrelationFilter.java b/src/main/java/com/flashguard/shared/observability/CorrelationFilter.java
+index 5967f78..3962cea 100644
+--- a/src/main/java/com/flashguard/shared/observability/CorrelationFilter.java
++++ b/src/main/java/com/flashguard/shared/observability/CorrelationFilter.java
+@@ -1,7 +1,6 @@
+ package com.flashguard.shared.observability;
+ 
+ import java.io.IOException;
+-import java.util.Objects;
+ import java.util.Optional;
+ import java.util.UUID;
+ 
+@@ -49,7 +48,7 @@ public class CorrelationFilter extends OncePerRequestFilter {
+             .filter(StringUtils::hasText)
+             .orElseGet(() -> {
+                 String queryValue = request.getParameter(headerName);
+-                return Objects.requireNonNullElse(queryValue, request.getParameter("requestId"));
++                return queryValue != null ? queryValue : request.getParameter("requestId");
+             });
+     }
+ }
+diff --git a/src/main/java/com/flashguard/shared/observability/MetricsConfiguration.java b/src/main/java/com/flashguard/shared/observability/MetricsConfiguration.java
+index c03c147..ef1354d 100644
+--- a/src/main/java/com/flashguard/shared/observability/MetricsConfiguration.java
++++ b/src/main/java/com/flashguard/shared/observability/MetricsConfiguration.java
+@@ -22,8 +22,8 @@ public class MetricsConfiguration {
+ 
+     @PostConstruct
+     public void registerCustomMetrics() {
+-        Gauge.builder("flashguard_mq_backlog", reservationService, StockReservationService::countMqBacklog)
+-            .description("Number of reservations waiting for async consumer confirmation")
++        Gauge.builder("flashguard_reservation_backlog", reservationService, StockReservationService::countMqBacklog)
++            .description("Durable reservations waiting for confirmation; this is not broker backlog")
+             .register(meterRegistry);
+     }
+ }
+diff --git a/src/main/resources/application.yml b/src/main/resources/application.yml
+index 3c62314..9020c63 100644
+--- a/src/main/resources/application.yml
++++ b/src/main/resources/application.yml
+@@ -20,8 +20,38 @@ spring:
+     default-property-inclusion: non_null
+ 
+ flashguard:
++  participation:
++    mode: ${FLASHGUARD_PARTICIPATION_MODE:mysql}
++  mq:
++    enabled: ${FLASHGUARD_MQ_ENABLED:false}
++    nameserver: ${FLASHGUARD_MQ_NAMESERVER:127.0.0.1:9876}
++    topic: ${FLASHGUARD_MQ_TOPIC:flashguard-reservations}
++    producer-group: ${FLASHGUARD_MQ_PRODUCER_GROUP:flashguard-reservation-producer}
++    consumer-group: ${FLASHGUARD_MQ_CONSUMER_GROUP:flashguard-reservation-consumer}
++    consumer-enabled: ${FLASHGUARD_MQ_CONSUMER_ENABLED:true}
++    max-reconsume-times: ${FLASHGUARD_MQ_MAX_RECONSUME_TIMES:3}
++    consume-thread-min: ${FLASHGUARD_MQ_CONSUME_THREADS_MIN:4}
++    consume-thread-max: ${FLASHGUARD_MQ_CONSUME_THREADS_MAX:8}
++    retry-delay-level: ${FLASHGUARD_MQ_RETRY_DELAY_LEVEL:0}
++    send-timeout-ms: ${FLASHGUARD_MQ_SEND_TIMEOUT_MS:5000}
+   reservation:
+     timeout: ${FLASHGUARD_RESERVATION_TIMEOUT:120s}
++  compensation:
++    scan-interval: ${FLASHGUARD_COMPENSATION_SCAN_INTERVAL:30s}
++    scan-batch-size: ${FLASHGUARD_COMPENSATION_SCAN_BATCH_SIZE:200}
++  ratelimit:
++    global-enabled: ${FLASHGUARD_RATELIMIT_GLOBAL_ENABLED:false}
++    enabled: ${FLASHGUARD_RATELIMIT_ENABLED:true}
++    activity:
++      limit: ${FLASHGUARD_ACTIVITY_RATE_LIMIT:120}
++      window-ms: ${FLASHGUARD_ACTIVITY_RATE_WINDOW_MS:1000}
++    user:
++      limit: ${FLASHGUARD_USER_RATE_LIMIT:5}
++      window-ms: ${FLASHGUARD_USER_RATE_WINDOW_MS:1000}
++  activity-cache:
++    maximum-size: ${FLASHGUARD_ACTIVITY_CACHE_MAXIMUM_SIZE:10000}
++    local-ttl-ms: ${FLASHGUARD_ACTIVITY_CACHE_LOCAL_TTL_MS:3000}
++    redis-ttl-ms: ${FLASHGUARD_ACTIVITY_CACHE_REDIS_TTL_MS:15000}
+ 
+ mybatis:
+   configuration:
+diff --git a/src/main/resources/redis/reserve_stock.lua b/src/main/resources/redis/reserve_stock.lua
+index 94ba727..838a10b 100644
+--- a/src/main/resources/redis/reserve_stock.lua
++++ b/src/main/resources/redis/reserve_stock.lua
+@@ -49,6 +49,14 @@ end
+ if ARGV[6] ~= 'RESERVE' and ARGV[6] ~= 'FIND' then
+     return state_error('invalid operation')
+ end
++local released_type = key_type(KEYS[5])
++if released_type ~= 'none' and released_type ~= 'hash' then
++    return state_error('wrong released key type')
++end
++if redis.call('HEXISTS', KEYS[5], ARGV[3]) == 1 then
++    if ARGV[6] == 'FIND' then return {'NOT_FOUND'} end
++    return {'REQUEST_CONFLICT'}
++end
+ 
+ local stock_type = key_type(KEYS[1])
+ local requests_type = key_type(KEYS[2])
+diff --git a/src/test/java/com/flashguard/FlashGuardApplicationTest.java b/src/test/java/com/flashguard/FlashGuardApplicationTest.java
+index 1f0f1e2..e63698c 100644
+--- a/src/test/java/com/flashguard/FlashGuardApplicationTest.java
++++ b/src/test/java/com/flashguard/FlashGuardApplicationTest.java
+@@ -9,11 +9,14 @@ import org.springframework.boot.test.context.SpringBootTest;
+ import org.springframework.test.context.bean.override.mockito.MockitoBean;
+ 
+ @SpringBootTest(properties = {
++    "flashguard.scheduling.enabled=false",
+     "spring.autoconfigure.exclude="
+         + "org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,"
+         + "org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration"
+ })
+ class FlashGuardApplicationTest {
++    @MockitoBean
++    private com.flashguard.reconciliation.ReconciliationIssueMapper reconciliationIssueMapper;
+ 
+     @MockitoBean
+     private ActivityMapper activityMapper;
+diff --git a/src/test/java/com/flashguard/activity/ActivityQueryServiceTest.java b/src/test/java/com/flashguard/activity/ActivityQueryServiceTest.java
+index c58f7a6..9adf065 100644
+--- a/src/test/java/com/flashguard/activity/ActivityQueryServiceTest.java
++++ b/src/test/java/com/flashguard/activity/ActivityQueryServiceTest.java
+@@ -27,6 +27,7 @@ class ActivityQueryServiceTest extends MySqlContainerSupport {
+     @BeforeEach
+     void seedActivity() {
+         jdbcTemplate.update("DELETE FROM orders");
++        jdbcTemplate.update("DELETE FROM stock_reservation");
+         jdbcTemplate.update("DELETE FROM activity_stock");
+         jdbcTemplate.update("DELETE FROM activity");
+         jdbcTemplate.update(
+diff --git a/src/test/java/com/flashguard/order/ReservationConsumerServiceTest.java b/src/test/java/com/flashguard/order/ReservationConsumerServiceTest.java
+index 19c70dc..97fa87f 100644
+--- a/src/test/java/com/flashguard/order/ReservationConsumerServiceTest.java
++++ b/src/test/java/com/flashguard/order/ReservationConsumerServiceTest.java
+@@ -57,6 +57,7 @@ class ReservationConsumerServiceTest {
+             stockMapper,
+             orderMapper,
+             orderNumberGenerator,
++            new io.micrometer.core.instrument.simple.SimpleMeterRegistry(),
+             NOW
+         );
+     }
+@@ -74,7 +75,7 @@ class ReservationConsumerServiceTest {
+         service.consumeReservation("res-1001", "msg-1");
+ 
+         ArgumentCaptor<OrderRecord> order = ArgumentCaptor.forClass(OrderRecord.class);
+-        verify(orderMapper).insertWithReservation(order.capture(), "res-1001");
++        verify(orderMapper).insertWithReservation(order.capture(), org.mockito.ArgumentMatchers.eq("res-1001"));
+         verify(reservationService).markAsMqCommitted("res-1001", "msg-1");
+         verify(reservationService).markAsConfirmed("res-1001", "msg-1");
+         assertThat(order.getValue().requestId()).isEqualTo("request-1");
+@@ -115,19 +116,18 @@ class ReservationConsumerServiceTest {
+         StockReservationRecord reservation = pendingReservation();
+         when(reservationService.findByReservationIdForUpdate("res-1001")).thenReturn(Optional.of(reservation));
+         when(reservationService.markAsMqCommitted("res-1001", "msg-1")).thenReturn(1);
+-        when(orderMapper.findByReservationId("res-1001")).thenReturn(Optional.empty());
+-        when(stockMapper.decrementIfAvailable(1001L)).thenReturn(1);
+         when(orderNumberGenerator.next()).thenReturn("01K4C1YJ0000000000000000OD");
+         doThrow(new DuplicateKeyException("duplicate"))
+             .when(orderMapper)
+             .insertWithReservation(any(OrderRecord.class), anyString());
+-        when(orderMapper.findByReservationId("res-1001")).thenReturn(Optional.of(
++        when(orderMapper.findByReservationId("res-1001")).thenReturn(Optional.empty(), Optional.of(
+             confirmedOrder("order-existing", "request-1", 1001L, 2001L)
+         ));
+ 
+         OrderRecord result = service.consumeReservation("res-1001", "msg-1");
+ 
+         assertThat(result.orderNo()).isEqualTo("order-existing");
++        verify(stockMapper, never()).decrementIfAvailable(1001L);
+         verify(reservationService).markAsConfirmed("res-1001", "msg-1");
+     }
+ 
+diff --git a/src/test/java/com/flashguard/participation/ParticipationMySqlIntegrationTest.java b/src/test/java/com/flashguard/participation/ParticipationMySqlIntegrationTest.java
+index 6cb2bb2..129ad1f 100644
+--- a/src/test/java/com/flashguard/participation/ParticipationMySqlIntegrationTest.java
++++ b/src/test/java/com/flashguard/participation/ParticipationMySqlIntegrationTest.java
+@@ -35,8 +35,11 @@ import org.springframework.boot.test.context.SpringBootTest;
+ import org.springframework.jdbc.core.JdbcTemplate;
+ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+ 
+-@SpringBootTest
++@SpringBootTest(properties = "flashguard.ratelimit.enabled=false")
+ class ParticipationMySqlIntegrationTest extends MySqlContainerSupport {
++    // This suite exercises the MySQL fallback transaction; Redis has its own real-container suite.
++    @org.springframework.test.context.bean.override.mockito.MockitoBean
++    private com.flashguard.reservation.RedisReservationStore reservationStore;
+ 
+     private static final long ACTIVITY_ID = 1001L;
+ 
+@@ -54,7 +57,12 @@ class ParticipationMySqlIntegrationTest extends MySqlContainerSupport {
+ 
+     @BeforeEach
+     void resetDatabase() {
++        org.mockito.Mockito.when(reservationStore.reserve(org.mockito.ArgumentMatchers.anyLong(),
++            org.mockito.ArgumentMatchers.anyLong(), org.mockito.ArgumentMatchers.anyString()))
++            .thenReturn(com.flashguard.reservation.ReservationResult.withoutReservation(
++                com.flashguard.reservation.ReservationDecision.NOT_READY));
+         jdbcTemplate.update("DELETE FROM orders");
++        jdbcTemplate.update("DELETE FROM stock_reservation");
+         jdbcTemplate.update("DELETE FROM activity_stock");
+         jdbcTemplate.update("DELETE FROM activity");
+     }
+diff --git a/src/test/java/com/flashguard/participation/ParticipationServiceTest.java b/src/test/java/com/flashguard/participation/ParticipationServiceTest.java
+index 5dc1d2e..80becb9 100644
+--- a/src/test/java/com/flashguard/participation/ParticipationServiceTest.java
++++ b/src/test/java/com/flashguard/participation/ParticipationServiceTest.java
+@@ -68,6 +68,7 @@ class ParticipationServiceTest {
+     @Mock
+     private StockReservationService stockReservationService;
+ 
++    @Mock private com.flashguard.mq.ReservationMessagePublisher publisher;
+     private ParticipationTransaction transactionUnderTest;
+     private ParticipationService service;
+ 
+@@ -84,7 +85,8 @@ class ParticipationServiceTest {
+             transaction,
+             orderMapper,
+             reservationStore,
+-            stockReservationService
++            stockReservationService,
++            org.mockito.Mockito.mock(ParticipationRateLimiter.class), publisher, "async"
+         );
+     }
+ 
+@@ -95,8 +97,7 @@ class ParticipationServiceTest {
+         when(orderMapper.findByRequestId("request-1")).thenReturn(Optional.empty());
+         when(reservationStore.reserve(1001L, 2001L, "request-1"))
+             .thenReturn(new ReservationResult(ReservationDecision.SUCCESS, pending));
+-        when(stockReservationService.findByRequestId("request-1")).thenReturn(Optional.empty());
+-        when(stockReservationService.createPending(pending)).thenReturn(persisted);
++        when(publisher.publish(pending)).thenReturn(persisted);
+ 
+         ParticipationOutcome outcome = service.participate(COMMAND);
+ 
+@@ -105,8 +106,7 @@ class ParticipationServiceTest {
+         assertThat(outcome.orderNo()).isNull();
+         assertThat(outcome.status()).isEqualTo("PENDING");
+         verify(reservationStore).reserve(1001L, 2001L, "request-1");
+-        verify(stockReservationService).findByRequestId("request-1");
+-        verify(stockReservationService).createPending(pending);
++        verify(publisher).publish(pending);
+     }
+ 
+     @Test
+@@ -115,14 +115,13 @@ class ParticipationServiceTest {
+         when(orderMapper.findByRequestId("request-1")).thenReturn(Optional.empty());
+         when(reservationStore.reserve(1001L, 2001L, "request-1"))
+             .thenReturn(new ReservationResult(ReservationDecision.REPLAY, pending));
+-        when(stockReservationService.findByRequestId("request-1"))
+-            .thenReturn(Optional.of(persistedReservation(pending)));
++        when(publisher.publish(pending)).thenReturn(persistedReservation(pending));
+ 
+         ParticipationOutcome outcome = service.participate(COMMAND);
+ 
+         assertThat(outcome.code()).isEqualTo(BusinessCode.PENDING);
+         assertThat(outcome.status()).isEqualTo("PENDING");
+-        verify(stockReservationService).findByRequestId("request-1");
++        verify(publisher).publish(pending);
+         verify(stockReservationService, never()).createPending(pending);
+     }
+ 
+@@ -137,27 +136,25 @@ class ParticipationServiceTest {
+             BusinessCode.DUPLICATE_PURCHASE
+         );
+ 
+-        verify(stockReservationService, never()).findByRequestId("request-1");
++        verify(stockReservationService).findByRequestId("request-1");
+         verify(transaction, never()).execute(COMMAND);
+     }
+ 
+     @Test
+-    void notReadyFallsBackToLegacyAndPreservesSuccessfulOutcome() {
++    void notReadyFailsClosedWithoutLegacyFallback() {
+         when(orderMapper.findByRequestId("request-1")).thenReturn(Optional.empty());
+         when(reservationStore.reserve(1001L, 2001L, "request-1"))
+             .thenReturn(ReservationResult.withoutReservation(ReservationDecision.NOT_READY));
+-
+-        when(transaction.execute(COMMAND)).thenReturn(ParticipationOutcome.success(confirmedOrder("order-existing", "request-1", 2001L)));
+-
+-        ParticipationOutcome outcome = service.participate(COMMAND);
+-
+-        assertThat(outcome).isEqualTo(new ParticipationOutcome(
+-            BusinessCode.SUCCESS,
+-            "request-1",
+-            "order-existing",
+-            "CONFIRMED"
+-        ));
+-        verify(transaction).execute(COMMAND);
++        assertBusinessCode(() -> service.participate(COMMAND), BusinessCode.SERVICE_UNAVAILABLE);
++        verify(transaction, never()).execute(COMMAND);
++    }
++    @Test
++    void redisFailureFailsClosedWithoutLegacyFallback() {
++        when(orderMapper.findByRequestId("request-1")).thenReturn(Optional.empty());
++        when(reservationStore.reserve(1001L, 2001L, "request-1"))
++            .thenThrow(new com.flashguard.reservation.ReservationStoreException("unavailable"));
++        assertBusinessCode(() -> service.participate(COMMAND), BusinessCode.SERVICE_UNAVAILABLE);
++        verify(transaction, never()).execute(COMMAND);
+     }
+ 
+     @Test
+@@ -247,8 +244,7 @@ class ParticipationServiceTest {
+ 
+     @Test
+     void duplicateRequestAfterRollbackIsMappedToReplay() {
+-        when(reservationStore.reserve(1001L, 2001L, "request-1"))
+-            .thenReturn(ReservationResult.withoutReservation(ReservationDecision.NOT_READY));
++        service = new ParticipationService(transaction, orderMapper, reservationStore, stockReservationService, org.mockito.Mockito.mock(ParticipationRateLimiter.class));
+         when(transaction.execute(COMMAND)).thenThrow(new DuplicateKeyException("duplicate"));
+         when(orderMapper.findByRequestId("request-1"))
+             .thenReturn(Optional.empty(), Optional.of(confirmedOrder("order-existing", "request-1", 2001L)));
+@@ -262,8 +258,7 @@ class ParticipationServiceTest {
+ 
+     @Test
+     void duplicatePurchaseAfterRollbackUsesStableBusinessCode() {
+-        when(reservationStore.reserve(1001L, 2001L, "request-1"))
+-            .thenReturn(ReservationResult.withoutReservation(ReservationDecision.NOT_READY));
++        service = new ParticipationService(transaction, orderMapper, reservationStore, stockReservationService, org.mockito.Mockito.mock(ParticipationRateLimiter.class));
+         when(transaction.execute(COMMAND)).thenThrow(new DuplicateKeyException("duplicate"));
+         when(orderMapper.findByRequestId("request-1")).thenReturn(Optional.empty());
+         when(orderMapper.findByActivityAndUser(1001L, 2001L))
+@@ -288,6 +283,57 @@ class ParticipationServiceTest {
+         assertThat(outcome.status()).isEqualTo("PENDING");
+     }
+ 
++    @org.junit.jupiter.params.ParameterizedTest
++    @org.junit.jupiter.params.provider.CsvSource({"1002,2001", "1001,2002"})
++    void orderRequestIdentityConflictIsRejectedBeforeRedis(long activity, long user) {
++        var existing = confirmedOrder("order-existing", "request-1", 2001L);
++        when(orderMapper.findByRequestId("request-1")).thenReturn(Optional.of(existing));
++        assertBusinessCode(() -> service.participate(new ParticipationCommand(activity,user,"request-1")),
++            BusinessCode.DUPLICATE_PURCHASE);
++        org.mockito.Mockito.verifyNoInteractions(reservationStore, publisher, transaction);
++    }
++
++    @org.junit.jupiter.params.ParameterizedTest
++    @org.junit.jupiter.params.provider.CsvSource({"1002,2001", "1001,2002"})
++    void durableRequestIdentityConflictIsRejectedBeforeRedis(long activity, long user) {
++        when(stockReservationService.findByRequestId("request-1"))
++            .thenReturn(Optional.of(persistedReservation(reservation("SUCCESS", 0, 60000))));
++        assertBusinessCode(() -> service.participate(new ParticipationCommand(activity,user,"request-1")),
++            BusinessCode.DUPLICATE_PURCHASE);
++        org.mockito.Mockito.verifyNoInteractions(reservationStore, publisher, transaction);
++    }
++
++    @Test
++    void matchingDurableRequestStillUsesPublisherAfterRedisReplay() {
++        var pending = reservation("SUCCESS", 0, 60000);
++        var row = persistedReservation(pending);
++        when(stockReservationService.findByRequestId("request-1")).thenReturn(Optional.of(row));
++        when(reservationStore.reserve(1001L,2001L,"request-1"))
++            .thenReturn(new ReservationResult(ReservationDecision.REPLAY,pending));
++        when(publisher.publish(pending)).thenReturn(row);
++        assertThat(service.participate(COMMAND).code()).isEqualTo(BusinessCode.PENDING);
++        verify(publisher).publish(pending);
++    }
++    @Test
++    void concurrentConflictingOrderIsNotReturnedFromLegacyDuplicateRecovery() {
++        service = new ParticipationService(transaction, orderMapper, reservationStore, stockReservationService,
++            org.mockito.Mockito.mock(ParticipationRateLimiter.class));
++        when(orderMapper.findByRequestId("request-1")).thenReturn(Optional.empty(),
++            Optional.of(confirmedOrder("other-order", "request-1", 9999L)));
++        when(transaction.execute(COMMAND)).thenThrow(new DuplicateKeyException("concurrent insert"));
++        assertBusinessCode(() -> service.participate(COMMAND), BusinessCode.DUPLICATE_PURCHASE);
++    }
++
++    @org.junit.jupiter.params.ParameterizedTest
++    @org.junit.jupiter.params.provider.CsvSource({"1002,2001", "1001,2002"})
++    void legacyTransactionRejectsConcurrentConflictingReplay(long activity,long user) {
++        when(orderMapper.findByRequestId("request-1"))
++            .thenReturn(Optional.of(confirmedOrder("other-order", "request-1", 2001L)));
++        assertBusinessCode(() -> transactionUnderTest.execute(new ParticipationCommand(activity,user,"request-1")),
++            BusinessCode.DUPLICATE_PURCHASE);
++        org.mockito.Mockito.verifyNoInteractions(stockMapper, activityMapper, orderNumberGenerator);
++    }
++
+     private void stubActiveActivity() {
+         when(orderMapper.findByRequestId("request-1")).thenReturn(Optional.empty());
+         when(activityMapper.findById(1001L)).thenReturn(Optional.of(activity(
+diff --git a/src/test/java/com/flashguard/reservation/RedisReservationStoreTest.java b/src/test/java/com/flashguard/reservation/RedisReservationStoreTest.java
+index 4d9f992..823c2a7 100644
+--- a/src/test/java/com/flashguard/reservation/RedisReservationStoreTest.java
++++ b/src/test/java/com/flashguard/reservation/RedisReservationStoreTest.java
+@@ -34,6 +34,58 @@ class RedisReservationStoreTest extends RedisContainerSupport {
+         store = new RedisReservationStore(redis, Duration.ofSeconds(120));
+     }
+ 
++    @Test
++    void malformedOrphanDoesNotBlockAHealthyOrphanInTheSamePage() {
++        RedisReservationStore shortLived = new RedisReservationStore(redis, Duration.ofMillis(1));
++        shortLived.warmUp(activeActivity(ACTIVITY_ID, 10, 10));
++        shortLived.reserve(ACTIVITY_ID, 2001, "bad");
++        PendingReservation good = shortLived.reserve(ACTIVITY_ID, 2002, "good").reservation();
++        redis.opsForHash().put(PREFIX + "requests", "bad", "invalid-json");
++        org.awaitility.Awaitility.await().atMost(Duration.ofSeconds(3)).until(() ->
++            redis.opsForZSet().count(PREFIX + "pending", 0, System.currentTimeMillis()) == 2);
++        var activities = org.mockito.Mockito.mock(com.flashguard.activity.ActivityMapper.class);
++        var durable = org.mockito.Mockito.mock(StockReservationService.class);
++        var compensation = org.mockito.Mockito.mock(ReservationTimeoutCompensationService.class);
++        var issues = org.mockito.Mockito.mock(com.flashguard.reconciliation.ReconciliationIssueMapper.class);
++        var record = new StockReservationService(org.mockito.Mockito.mock(StockReservationMapper.class)).toPendingRecord(good);
++        org.mockito.Mockito.when(activities.findIdsAfter(0, 1)).thenReturn(List.of(ACTIVITY_ID));
++        org.mockito.Mockito.when(durable.createPending(good)).thenReturn(record);
++        new RedisOrphanRecoveryJob(activities, shortLived, durable, compensation, issues).recover();
++        org.mockito.Mockito.verify(compensation).compensateReservation(record);
++        org.mockito.Mockito.verify(issues).insert(org.mockito.ArgumentMatchers.eq(ACTIVITY_ID),
++            org.mockito.ArgumentMatchers.contains("bad"));
++    }
++
++    @Test
++    void releaseIsIdempotentAndDoesNotReleaseANewerReservationForTheSameRequest() {
++        store.warmUp(activeActivity(ACTIVITY_ID, 10, 10));
++        store.reserve(ACTIVITY_ID, 2001L, "release-1");
++        for (int i = 0; i < 100; i++) {
++            assertThat(store.releaseByRequestId(ACTIVITY_ID, "release-1")).isTrue();
++        }
++        assertThat(remaining(ACTIVITY_ID)).isEqualTo(10);
++        assertThat(store.countPendingReservations(ACTIVITY_ID)).isZero();
++        // The cancelled request remains a tombstone, so a delayed retry cannot reserve again.
++        assertThat(store.reserve(ACTIVITY_ID, 2001L, "release-1").decision())
++            .isEqualTo(ReservationDecision.REQUEST_CONFLICT);
++        assertThat(store.reserve(ACTIVITY_ID, 2001L, "release-2").decision())
++            .isEqualTo(ReservationDecision.SUCCESS);
++        assertThat(store.releaseByRequestId(ACTIVITY_ID, "release-1")).isTrue();
++        assertThat(remaining(ACTIVITY_ID)).isEqualTo(9);
++    }
++
++    @Test
++    void invalidReleaseDoesNotPartiallyDeleteReservation() {
++        store.warmUp(activeActivity(ACTIVITY_ID, 10, 10));
++        store.reserve(ACTIVITY_ID, 2001L, "release-1");
++        redis.opsForHash().put(PREFIX + "stock", "availableStock", "10");
++        assertThatThrownBy(() -> store.releaseByRequestId(ACTIVITY_ID, "release-1"))
++            .isInstanceOf(ReservationStoreException.class);
++        assertThat(redis.opsForHash().hasKey(PREFIX + "requests", "release-1")).isTrue();
++        assertThat(redis.opsForHash().hasKey(PREFIX + "users", "2001")).isTrue();
++        assertThat(store.countPendingReservations(ACTIVITY_ID)).isEqualTo(1);
++    }
++
+     @Test
+     void warmupUsesAvailableDatabaseStockAndNeverOverwritesAnInitializedActivity() {
+         ActivityView snapshot = activeActivity(ACTIVITY_ID, 500, 7);
+diff --git a/src/test/java/com/flashguard/reservation/ReservationWarmupServiceTest.java b/src/test/java/com/flashguard/reservation/ReservationWarmupServiceTest.java
+index 6b391ab..7150b45 100644
+--- a/src/test/java/com/flashguard/reservation/ReservationWarmupServiceTest.java
++++ b/src/test/java/com/flashguard/reservation/ReservationWarmupServiceTest.java
+@@ -6,7 +6,7 @@ import static org.mockito.Mockito.when;
+ 
+ import java.time.LocalDateTime;
+ 
+-import com.flashguard.activity.ActivityQueryService;
++import com.flashguard.activity.ActivityMapper;
+ import com.flashguard.activity.ActivityStatus;
+ import com.flashguard.activity.ActivityView;
+ import org.junit.jupiter.api.Test;
+@@ -18,7 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
+ class ReservationWarmupServiceTest {
+ 
+     @Mock
+-    private ActivityQueryService activityQueryService;
++    private ActivityMapper activityMapper;
+ 
+     @Mock
+     private RedisReservationStore store;
+@@ -34,9 +34,9 @@ class ReservationWarmupServiceTest {
+             100,
+             73
+         );
+-        when(activityQueryService.findById(1001L)).thenReturn(snapshot);
++        when(activityMapper.findById(1001L)).thenReturn(java.util.Optional.of(snapshot));
+         when(store.warmUp(snapshot)).thenReturn(WarmUpResult.INITIALIZED);
+-        ReservationWarmupService service = new ReservationWarmupService(activityQueryService, store);
++        ReservationWarmupService service = new ReservationWarmupService(activityMapper, store);
+ 
+         assertThat(service.warmUp(1001L)).isEqualTo(WarmUpResult.INITIALIZED);
+         verify(store).warmUp(snapshot);
+diff --git a/src/test/java/com/flashguard/support/MySqlContainerSupport.java b/src/test/java/com/flashguard/support/MySqlContainerSupport.java
+index 259beed..a0124e2 100644
+--- a/src/test/java/com/flashguard/support/MySqlContainerSupport.java
++++ b/src/test/java/com/flashguard/support/MySqlContainerSupport.java
+@@ -15,6 +15,7 @@ public abstract class MySqlContainerSupport {
+ 
+     @DynamicPropertySource
+     static void registerDatabaseProperties(DynamicPropertyRegistry registry) {
++        registry.add("flashguard.scheduling.enabled", () -> false);
+         if (EXTERNAL_URL != null && !EXTERNAL_URL.isBlank()) {
+             registry.add("spring.datasource.url", MySqlContainerSupport::externalJdbcUrl);
+             registry.add("spring.datasource.username", () -> EXTERNAL_USERNAME);

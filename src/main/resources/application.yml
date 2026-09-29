@@ -10,8 +10,48 @@ spring:
       minimum-idle: 2
   flyway:
     enabled: true
+  data:
+    redis:
+      host: ${FLASHGUARD_REDIS_HOST:localhost}
+      port: ${FLASHGUARD_REDIS_PORT:6379}
+      connect-timeout: ${FLASHGUARD_REDIS_CONNECT_TIMEOUT:2s}
+      timeout: ${FLASHGUARD_REDIS_COMMAND_TIMEOUT:2s}
   jackson:
     default-property-inclusion: non_null
+
+flashguard:
+  participation:
+    mode: ${FLASHGUARD_PARTICIPATION_MODE:mysql}
+  mq:
+    enabled: ${FLASHGUARD_MQ_ENABLED:false}
+    nameserver: ${FLASHGUARD_MQ_NAMESERVER:127.0.0.1:9876}
+    topic: ${FLASHGUARD_MQ_TOPIC:flashguard-reservations}
+    producer-group: ${FLASHGUARD_MQ_PRODUCER_GROUP:flashguard-reservation-producer}
+    consumer-group: ${FLASHGUARD_MQ_CONSUMER_GROUP:flashguard-reservation-consumer}
+    consumer-enabled: ${FLASHGUARD_MQ_CONSUMER_ENABLED:true}
+    max-reconsume-times: ${FLASHGUARD_MQ_MAX_RECONSUME_TIMES:3}
+    consume-thread-min: ${FLASHGUARD_MQ_CONSUME_THREADS_MIN:4}
+    consume-thread-max: ${FLASHGUARD_MQ_CONSUME_THREADS_MAX:8}
+    retry-delay-level: ${FLASHGUARD_MQ_RETRY_DELAY_LEVEL:0}
+    send-timeout-ms: ${FLASHGUARD_MQ_SEND_TIMEOUT_MS:5000}
+  reservation:
+    timeout: ${FLASHGUARD_RESERVATION_TIMEOUT:120s}
+  compensation:
+    scan-interval: ${FLASHGUARD_COMPENSATION_SCAN_INTERVAL:30s}
+    scan-batch-size: ${FLASHGUARD_COMPENSATION_SCAN_BATCH_SIZE:200}
+  ratelimit:
+    global-enabled: ${FLASHGUARD_RATELIMIT_GLOBAL_ENABLED:false}
+    enabled: ${FLASHGUARD_RATELIMIT_ENABLED:true}
+    activity:
+      limit: ${FLASHGUARD_ACTIVITY_RATE_LIMIT:120}
+      window-ms: ${FLASHGUARD_ACTIVITY_RATE_WINDOW_MS:1000}
+    user:
+      limit: ${FLASHGUARD_USER_RATE_LIMIT:5}
+      window-ms: ${FLASHGUARD_USER_RATE_WINDOW_MS:1000}
+  activity-cache:
+    maximum-size: ${FLASHGUARD_ACTIVITY_CACHE_MAXIMUM_SIZE:10000}
+    local-ttl-ms: ${FLASHGUARD_ACTIVITY_CACHE_LOCAL_TTL_MS:3000}
+    redis-ttl-ms: ${FLASHGUARD_ACTIVITY_CACHE_REDIS_TTL_MS:15000}
 
 mybatis:
   configuration:
@@ -23,3 +63,20 @@ server:
     include-message: never
     include-stacktrace: never
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+    prometheus:
+      enabled: true
+  metrics:
+    enable:
+      all: true
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} |%5p| [%thread] %X{traceId:-} %X{requestId:-} %X{reservationId:-} %X{messageKey:-} - %msg%n"

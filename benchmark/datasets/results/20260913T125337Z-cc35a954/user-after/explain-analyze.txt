@@ -1,0 +1,2 @@
+-> Limit: 50 row(s)  (cost=12.7 rows=50) (actual time=0.027..0.0641 rows=50 loops=1)
+    -> Covering index lookup on historical_orders using ix_history_user_status_created (user_id=4242, status='CONFIRMED') (reverse)  (cost=12.7 rows=100) (actual time=0.026..0.0592 rows=50 loops=1)

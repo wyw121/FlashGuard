@@ -27,6 +27,7 @@ class ActivityQueryServiceTest extends MySqlContainerSupport {
     @BeforeEach
     void seedActivity() {
         jdbcTemplate.update("DELETE FROM orders");
+        jdbcTemplate.update("DELETE FROM stock_reservation");
         jdbcTemplate.update("DELETE FROM activity_stock");
         jdbcTemplate.update("DELETE FROM activity");
         jdbcTemplate.update(

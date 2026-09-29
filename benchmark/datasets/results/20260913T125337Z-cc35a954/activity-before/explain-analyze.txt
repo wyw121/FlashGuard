@@ -1,0 +1,4 @@
+-> Limit: 50 row(s)  (cost=4727 rows=50) (actual time=74.6..74.6 rows=50 loops=1)
+    -> Sort: historical_orders.created_at DESC, historical_orders.id DESC, limit input to 50 row(s) per chunk  (cost=4727 rows=18176) (actual time=74.6..74.6 rows=50 loops=1)
+        -> Filter: (historical_orders.`status` = 'CONFIRMED')  (cost=4727 rows=18176) (actual time=1.64..66.4 rows=9000 loops=1)
+            -> Index lookup on historical_orders using uk_history_activity_user (activity_id=42)  (cost=4727 rows=18176) (actual time=1.62..60.6 rows=10000 loops=1)

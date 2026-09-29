@@ -1,0 +1,261 @@
+{
+  "command": "pwsh -NoProfile -File scripts/run-awake-validation.ps1 -Mode Regression",
+  "gitSha": "f56e47ad52c849f07287d7a2a7e2fff4bc5d0f00",
+  "tests": 148.0,
+  "failures": 0.0,
+  "errors": 0.0,
+  "skipped": 2.0,
+  "suites": [
+    {
+      "name": "com.flashguard.activity.ActivityCacheConcurrencyTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 10.91
+    },
+    {
+      "name": "com.flashguard.activity.ActivityCacheRedisTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 15.151
+    },
+    {
+      "name": "com.flashguard.activity.ActivityCacheServiceTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.08
+    },
+    {
+      "name": "com.flashguard.activity.ActivityControllerTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 10.059
+    },
+    {
+      "name": "com.flashguard.activity.ActivityQueryServiceTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 48.355
+    },
+    {
+      "name": "com.flashguard.datasets.HistoricalOrdersSqlBenchmarkTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "seconds": 0.002
+    },
+    {
+      "name": "com.flashguard.FlashGuardApplicationTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 4.865
+    },
+    {
+      "name": "com.flashguard.mq.ReservationLocalTransactionServiceTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.041
+    },
+    {
+      "name": "com.flashguard.mq.ReservationMessageConsumerTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.735
+    },
+    {
+      "name": "com.flashguard.mq.ReservationTransactionListenerTest",
+      "tests": 14,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 1.297
+    },
+    {
+      "name": "com.flashguard.mq.RocketMqBacklogMetricsTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 3.219
+    },
+    {
+      "name": "com.flashguard.mq.RocketMqIntegrationTest",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 277.777
+    },
+    {
+      "name": "com.flashguard.order.OrderControllerTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 1.475
+    },
+    {
+      "name": "com.flashguard.order.ReservationConsumerServiceTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.4
+    },
+    {
+      "name": "com.flashguard.participation.ParticipationControllerTest",
+      "tests": 12,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 1.856
+    },
+    {
+      "name": "com.flashguard.participation.ParticipationMySqlIntegrationTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 13.959
+    },
+    {
+      "name": "com.flashguard.participation.ParticipationRateLimiterRedisTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 7.09
+    },
+    {
+      "name": "com.flashguard.participation.ParticipationRateLimiterTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.056
+    },
+    {
+      "name": "com.flashguard.participation.ParticipationServiceTest",
+      "tests": 26,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 1.242
+    },
+    {
+      "name": "com.flashguard.perf.BenchmarkPrometheusCaptureTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.812
+    },
+    {
+      "name": "com.flashguard.perf.RealHttpBenchmarkTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "seconds": 0.001
+    },
+    {
+      "name": "com.flashguard.reconciliation.ReconciliationServiceTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.051
+    },
+    {
+      "name": "com.flashguard.reservation.RedisClusterBucketBenchmarkTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 76.063
+    },
+    {
+      "name": "com.flashguard.reservation.RedisHotKeyBenchmarkTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 5.771
+    },
+    {
+      "name": "com.flashguard.reservation.RedisOrphanRecoveryJobTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.035
+    },
+    {
+      "name": "com.flashguard.reservation.RedisReservationStoreTest",
+      "tests": 21,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 4.859
+    },
+    {
+      "name": "com.flashguard.reservation.ReservationCompensationIntegrationTest",
+      "tests": 13,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 13.991
+    },
+    {
+      "name": "com.flashguard.reservation.ReservationTimeoutCompensationServiceTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.067
+    },
+    {
+      "name": "com.flashguard.reservation.ReservationWarmupServiceTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.03
+    },
+    {
+      "name": "com.flashguard.shared.id.TimeRandomOrderNumberGeneratorTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.009
+    },
+    {
+      "name": "com.flashguard.support.RocketMqProcessSmokeTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 38.354
+    }
+  ],
+  "testedJavaAndK6MatchGitSha": true,
+  "wrapperPatch": "full-verify-wrapper.patch",
+  "jarSha256": "c059aa6b7d289a4ea3176a2b67cd34038fbee151538363f0cf87396004806095"
+}

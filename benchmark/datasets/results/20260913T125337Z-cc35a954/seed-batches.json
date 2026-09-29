@@ -1,0 +1,41 @@
+[ {
+  "elapsedMs" : 9028.9845,
+  "rows" : 100000,
+  "batch" : 0
+}, {
+  "elapsedMs" : 5593.6259,
+  "rows" : 100000,
+  "batch" : 1
+}, {
+  "elapsedMs" : 6657.1464,
+  "rows" : 100000,
+  "batch" : 2
+}, {
+  "elapsedMs" : 6283.7747,
+  "rows" : 100000,
+  "batch" : 3
+}, {
+  "elapsedMs" : 6522.1243,
+  "rows" : 100000,
+  "batch" : 4
+}, {
+  "elapsedMs" : 5742.2931,
+  "rows" : 100000,
+  "batch" : 5
+}, {
+  "elapsedMs" : 6666.1256,
+  "rows" : 100000,
+  "batch" : 6
+}, {
+  "elapsedMs" : 6268.199,
+  "rows" : 100000,
+  "batch" : 7
+}, {
+  "elapsedMs" : 5712.0408,
+  "rows" : 100000,
+  "batch" : 8
+}, {
+  "elapsedMs" : 6099.5098,
+  "rows" : 100000,
+  "batch" : 9
+} ]

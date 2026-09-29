@@ -1,0 +1,8 @@
+{
+  "runs" : [ ],
+  "warmupsExcludedFromStatistics" : [ ],
+  "suiteCompleted" : false,
+  "comparisons" : { },
+  "overallStatus" : "REVIEW",
+  "boundary" : "Configured-rate HTTP evidence with scheduled compensation/reconciliation disabled; not total production capacity, maximum capacity, million-request, million-row or Redis Cluster evidence"
+}

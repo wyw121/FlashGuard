@@ -1,0 +1,4 @@
+-> Limit: 50 row(s)  (cost=101351 rows=50) (actual time=856..856 rows=50 loops=1)
+    -> Sort: historical_orders.created_at DESC, historical_orders.id DESC, limit input to 50 row(s) per chunk  (cost=101351 rows=991312) (actual time=856..856 rows=50 loops=1)
+        -> Filter: ((historical_orders.`status` = 'CONFIRMED') and (historical_orders.user_id = 4242))  (cost=101351 rows=991312) (actual time=5.54..855 rows=100 loops=1)
+            -> Table scan on historical_orders  (cost=101351 rows=991312) (actual time=0.259..545 rows=1e+6 loops=1)

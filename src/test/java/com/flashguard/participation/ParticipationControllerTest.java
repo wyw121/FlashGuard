@@ -2,9 +2,11 @@ package com.flashguard.participation;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.flashguard.shared.error.BusinessCode;
@@ -50,6 +52,18 @@ class ParticipationControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.code").value("REPLAY"))
             .andExpect(jsonPath("$.data.orderNo").value("01K4C1YJ000000000000000001"));
+    }
+
+    @Test
+    void pendingReturnsAcceptedAndMarksPendingStatus() throws Exception {
+        when(service.participate(any())).thenReturn(outcome(BusinessCode.PENDING, "PENDING"));
+
+        mockMvc.perform(post("/api/v1/activities/1001/participations")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(validBody()))
+            .andExpect(status().isAccepted())
+            .andExpect(jsonPath("$.code").value("PENDING"))
+            .andExpect(jsonPath("$.data.status").value("PENDING"));
     }
 
     @Test
@@ -105,6 +119,39 @@ class ParticipationControllerTest {
     }
 
     @Test
+    void participationWithGetReturnsMethodNotAllowedAndAllowedMethod() throws Exception {
+        mockMvc.perform(get("/api/v1/activities/1001/participations"))
+            .andExpect(status().isMethodNotAllowed())
+            .andExpect(header().string("Allow", "POST"))
+            .andExpect(jsonPath("$.code").value("METHOD_NOT_ALLOWED"));
+
+        verifyNoInteractions(service);
+    }
+
+    @Test
+    void plainTextBodyReturnsUnsupportedMediaTypeWithAcceptedFormats() throws Exception {
+        mockMvc.perform(post("/api/v1/activities/1001/participations")
+                .contentType(MediaType.TEXT_PLAIN)
+                .content(validBody()))
+            .andExpect(status().isUnsupportedMediaType())
+            .andExpect(header().string("Accept", org.hamcrest.Matchers.containsString("application/json")))
+            .andExpect(jsonPath("$.code").value("UNSUPPORTED_MEDIA_TYPE"));
+
+        verifyNoInteractions(service);
+    }
+
+    @Test
+    void formBodyReturnsUnsupportedMediaType() throws Exception {
+        mockMvc.perform(post("/api/v1/activities/1001/participations")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .content("userId=10001&requestId=postman-001"))
+            .andExpect(status().isUnsupportedMediaType())
+            .andExpect(jsonPath("$.code").value("UNSUPPORTED_MEDIA_TYPE"));
+
+        verifyNoInteractions(service);
+    }
+
+    @Test
     void participationCanBeQueriedByRequestId() throws Exception {
         when(service.findByRequestId("request-1")).thenReturn(outcome(BusinessCode.SUCCESS));
 
@@ -125,11 +172,15 @@ class ParticipationControllerTest {
     }
 
     private ParticipationOutcome outcome(BusinessCode code) {
+        return outcome(code, "CONFIRMED");
+    }
+
+    private ParticipationOutcome outcome(BusinessCode code, String status) {
         return new ParticipationOutcome(
             code,
             "request-1",
             "01K4C1YJ000000000000000001",
-            "CONFIRMED"
+            status
         );
     }
 

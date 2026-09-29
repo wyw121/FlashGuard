@@ -10,4 +10,3 @@ public class FlashGuardApplication {
         SpringApplication.run(FlashGuardApplication.class, args);
     }
 }
-

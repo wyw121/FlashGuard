@@ -1,0 +1,167 @@
+warning: in the working copy of 'scripts/run-benchmarks.ps1', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'scripts/verify-real-chain.ps1', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'scripts/verify-stage5.ps1', LF will be replaced by CRLF the next time Git touches it
+diff --git a/benchmark/k6/http-full-path.js b/benchmark/k6/http-full-path.js
+index fca7d3f..d5a5ca3 100644
+--- a/benchmark/k6/http-full-path.js
++++ b/benchmark/k6/http-full-path.js
+@@ -44,16 +44,19 @@ export default function () {
+   const id = exec.scenario.iterationInTest;
+   // Replay is a deterministic 50-user/50-request distribution, not accidental duplicate UUIDs.
+   const slot = mode === 'replay' ? id % 50 : id;
++  // Each pair competes for one user with distinct requests; order of arrival is irrelevant.
++  const userSlot = mode === 'mixed' ? Math.floor(id / 2) : slot;
+   const requestId = `${__ENV.RUN_ID}-${slot}`;
+   const start = Date.now();
+   const response = http.post(`${__ENV.BASE_URL}/api/v1/activities/${__ENV.ACTIVITY_ID}/participations`,
+-    JSON.stringify({ userId: 1000000 + slot, requestId }),
++    JSON.stringify({ userId: 1000000 + userSlot, requestId }),
+     { headers: { 'Content-Type': 'application/json' }, timeout: '10s', tags: { name: 'participate' } });
+   admission.add(response.timings.duration);
+   const value = body(response);
+   if (['SOLD_OUT', 'DUPLICATE_PURCHASE', 'THROTTLED'].includes(value.code)) {
+     rejects.add(1); if (value.code === 'THROTTLED') throttled.add(1);
+-    recordError(response.status !== (value.code === 'THROTTLED' ? 429 : 409) || mode === 'success' || mode === 'replay',
++    recordError(response.status !== (value.code === 'THROTTLED' ? 429 : 409) || mode === 'success' || mode === 'replay'
++      || (mode === 'mixed' && value.code !== 'DUPLICATE_PURCHASE'),
+       requestId, 'admission_business_rejection', response, value, start); return;
+   }
+   if (![200, 201, 202].includes(response.status) || !['SUCCESS', 'REPLAY', 'PENDING'].includes(value.code)) {
+diff --git a/scripts/run-benchmarks.ps1 b/scripts/run-benchmarks.ps1
+index ddfe792..185ee0a 100644
+--- a/scripts/run-benchmarks.ps1
++++ b/scripts/run-benchmarks.ps1
+@@ -2,11 +2,13 @@
+ param(
+     [ValidateSet('Preflight','Full','Sql','Cluster')][string]$Mode = 'Full',
+     [ValidateRange(1,10000)][int]$Rate = 10,
+-    [ValidateRange(1,5000)][int]$Vus = 200
++    [ValidateRange(1,5000)][int]$Vus = 200,
++    [string]$MavenSettings
+ )
+ $ErrorActionPreference = 'Stop'
+ $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+ $settings = Join-Path (Split-Path $projectRoot -Parent) 'work-notes\maven-settings.xml'
++if ($MavenSettings) { $settings = (Resolve-Path -LiteralPath $MavenSettings -ErrorAction Stop).Path }
+ docker version --format '{{.Server.Version}}'
+ if ($LASTEXITCODE -ne 0) { throw 'Start Docker Desktop Linux engine first.' }
+ docker image inspect flashguard-mq-test-runtime:local *> $null
+@@ -14,7 +16,8 @@ if ($LASTEXITCODE -ne 0 -and $Mode -in @('Preflight','Full')) {
+     docker build -f (Join-Path $projectRoot 'config\rocketmq\Dockerfile.test-runtime') -t flashguard-mq-test-runtime:local (Join-Path $projectRoot 'config\rocketmq')
+     if ($LASTEXITCODE -ne 0) { throw 'RocketMQ runtime build failed.' }
+ }
+-$arguments = @('-s',$settings,'-Dflashguard.test.db.url=')
++$arguments = @('-Dflashguard.test.db.url=')
++if (Test-Path -LiteralPath $settings -PathType Leaf) { $arguments += @('-s', $settings) }
+ switch ($Mode) {
+     'Preflight' { $arguments += @('-Dtest=RealHttpBenchmarkTest','-Dflashguard.perf.enabled=true','-Dperf.warmup.seconds=0','-Dperf.seconds=5','-Dperf.repetitions=1',"-Dperf.rate=$Rate","-Dperf.vus=$Vus") }
+     'Full' { $arguments += @('-Dtest=RealHttpBenchmarkTest','-Dflashguard.perf.enabled=true','-Dperf.warmup.seconds=60','-Dperf.seconds=180','-Dperf.repetitions=5',"-Dperf.rate=$Rate","-Dperf.vus=$Vus") }
+diff --git a/scripts/verify-real-chain.ps1 b/scripts/verify-real-chain.ps1
+index 236ac14..a93921f 100644
+--- a/scripts/verify-real-chain.ps1
++++ b/scripts/verify-real-chain.ps1
+@@ -1,11 +1,13 @@
+ [CmdletBinding()]
+ param(
+     [ValidateSet('All','RedisOutage','MysqlOutage','ProducerKill','ConsumerKill','ConsumerFailure','Backlog','Stage6','Stage7')]
+-    [string]$Scenario = 'All'
++    [string]$Scenario = 'All',
++    [string]$MavenSettings
+ )
+ $ErrorActionPreference = 'Stop'
+ $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+ $settingsPath = Join-Path (Split-Path $projectRoot -Parent) 'work-notes\maven-settings.xml'
++if ($MavenSettings) { $settingsPath = (Resolve-Path -LiteralPath $MavenSettings -ErrorAction Stop).Path }
+ docker version --format '{{.Server.Version}}'
+ if ($LASTEXITCODE -ne 0) { throw 'Docker Desktop Linux engine must be running for isolated MySQL/Redis tests.' }
+ docker image inspect flashguard-mq-test-runtime:local *> $null
+@@ -24,9 +26,13 @@ $tests = switch ($Scenario) {
+     'Stage7' { 'RedisHotKeyBenchmarkTest,RedisClusterBucketBenchmarkTest' }
+     default { $null }
+ }
+-$mavenArgs = @('-s', $settingsPath, '-f', (Join-Path $projectRoot 'pom.xml'), '-Dflashguard.test.db.url=')
++$mavenArgs = @('-Dflashguard.test.db.url=')
++if (Test-Path -LiteralPath $settingsPath -PathType Leaf) { $mavenArgs += @('-s', $settingsPath) }
+ if ($tests) { $mavenArgs += "-Dtest=$tests" }
+ $mavenArgs += 'verify'
+-& mvn @mavenArgs
+-if ($LASTEXITCODE -ne 0) { throw "FAIL: $Scenario. Inspect target/surefire-reports and target/rocketmq-it." }
++Push-Location $projectRoot
++try {
++    & mvn @mavenArgs
++    if ($LASTEXITCODE -ne 0) { throw "FAIL: $Scenario. Inspect target/surefire-reports and target/rocketmq-it." }
++} finally { Pop-Location }
+ Write-Host "PASS: $Scenario selected tests and packaging. Inspect reports for exact scope; this is not production capacity acceptance."
+diff --git a/scripts/verify-stage5.ps1 b/scripts/verify-stage5.ps1
+index 3f122ca..7c6d0de 100644
+--- a/scripts/verify-stage5.ps1
++++ b/scripts/verify-stage5.ps1
+@@ -1,14 +1,19 @@
+-param([switch]$Full)
++param([switch]$Full, [string]$MavenSettings)
+ $ErrorActionPreference = 'Stop'
+ $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+ $settingsPath = Join-Path (Split-Path $projectRoot -Parent) 'work-notes\maven-settings.xml'
++if ($MavenSettings) { $settingsPath = (Resolve-Path -LiteralPath $MavenSettings -ErrorAction Stop).Path }
+ docker version --format '{{.Server.Version}}'
+ if ($LASTEXITCODE -ne 0) { throw 'Docker Desktop Linux engine must be running.' }
+-$mavenArgs = @('-s', $settingsPath, '-f', (Join-Path $projectRoot 'pom.xml'))
++$mavenArgs = @('-Dflashguard.test.db.url=')
++if (Test-Path -LiteralPath $settingsPath -PathType Leaf) { $mavenArgs += @('-s', $settingsPath) }
+ if (-not $Full) {
+     $mavenArgs += '-Dtest=RedisReservationStoreTest,ReservationCompensationIntegrationTest,ReservationTimeoutCompensationServiceTest,RedisOrphanRecoveryJobTest,ReconciliationServiceTest,ActivityCacheServiceTest'
+ }
+ $mavenArgs += 'verify'
+-& mvn @mavenArgs
+-if ($LASTEXITCODE -ne 0) { throw 'FlashGuard verification failed. Inspect target/surefire-reports.' }
++Push-Location $projectRoot
++try {
++    & mvn @mavenArgs
++    if ($LASTEXITCODE -ne 0) { throw 'FlashGuard verification failed. Inspect target/surefire-reports.' }
++} finally { Pop-Location }
+ Write-Host 'PASS: selected tests and packaging succeeded. This is not RocketMQ or capacity acceptance.'
+diff --git a/src/test/java/com/flashguard/perf/RealHttpBenchmarkTest.java b/src/test/java/com/flashguard/perf/RealHttpBenchmarkTest.java
+index 1eaeea2..bd61a3f 100644
+--- a/src/test/java/com/flashguard/perf/RealHttpBenchmarkTest.java
++++ b/src/test/java/com/flashguard/perf/RealHttpBenchmarkTest.java
+@@ -66,8 +66,8 @@ class RealHttpBenchmarkTest extends MySqlContainerSupport {
+             admin.setInstanceName("perf-admin-" + UUID.randomUUID()); admin.setVipChannelEnabled(false); admin.start();
+             writeEnvironment(sha);
+             Set<String> selected = new LinkedHashSet<>(Arrays.asList(System.getProperty("perf.scenarios",
+-                "mysql-success,mysql-soldout,mysql-replay,async-success,async-soldout,async-replay,async-limiter-local,async-limiter-global").split(",")));
+-            Set<String> known = Set.of("mysql-success", "mysql-soldout", "mysql-replay", "async-success", "async-soldout", "async-replay", "async-limiter-local", "async-limiter-global");
++                "mysql-success,mysql-soldout,mysql-replay,mysql-mixed,async-success,async-soldout,async-replay,async-mixed,async-limiter-local,async-limiter-global").split(",")));
++            Set<String> known = Set.of("mysql-success", "mysql-soldout", "mysql-replay", "mysql-mixed", "async-success", "async-soldout", "async-replay", "async-mixed", "async-limiter-local", "async-limiter-global");
+             if (!known.containsAll(selected)) throw new IllegalArgumentException("Unknown perf.scenarios: " + selected);
+             for (String profile : List.of("mysql", "async", "async-limiter-local", "async-limiter-global")) {
+                 List<String> scenarios = selected.stream().filter(s -> profile.startsWith("async-limiter") ? s.equals(profile)
+@@ -135,7 +135,9 @@ class RealHttpBenchmarkTest extends MySqlContainerSupport {
+         record.put("initialStock", stock); record.put("targetRps", rate); record.put("seconds", runSeconds); record.put("vus", vus);
+         record.put("warmupExcluded", warmup); record.put("protocolShortfalls", protocolShortfalls());
+         record.put("topic", topic); record.put("consumerGroup", consumerGroup); record.put("start", Instant.now().toString());
+-        record.put("dataSeed", "activity=" + activity + ";users=1000000+iteration;replayModulo=50");
++        record.put("dataSeed", "activity=" + activity + (kind.equals("mixed")
++            ? ";users=1000000+floor(iteration/2);request=runId+iteration;expectedDuplicateFraction=0.5"
++            : ";users=1000000+slot;slot=replay?iteration%50:iteration"));
+         record.put("mysqlSettings", jdbc.queryForMap("SELECT @@version AS version, @@innodb_buffer_pool_size AS bufferPoolBytes, @@max_connections AS maxConnections, @@transaction_isolation AS transactionIsolation, @@innodb_flush_log_at_trx_commit AS flushLogAtCommit"));
+         long messagesBefore = brokerMessages(); record.put("brokerMessagesBefore", messagesBefore);
+         write(directory.resolve("config.json"), record);
+@@ -173,7 +175,8 @@ class RealHttpBenchmarkTest extends MySqlContainerSupport {
+         List<String> reviewReasons = new ArrayList<>(protocolShortfalls());
+         if (load.exitValue() != 0 || dropped != 0 || systemErrors != 0) failures.add("k6 threshold/system-error/dropped-iteration gate");
+         if (requests < rate * runSeconds * 0.99) failures.add("achieved arrivals below 99% of target");
+-        long expectedOrders = kind.equals("replay") ? Math.min(50, requests) : finalResponses;
++        long expectedOrders = kind.equals("replay") ? Math.min(50, requests)
++            : kind.equals("mixed") ? (requests + 1) / 2 : finalResponses;
+         try {
+             await().atMost(Duration.ofSeconds(60)).ignoreExceptions().until(() ->
+                 count(jdbc, "SELECT COUNT(*) FROM orders WHERE activity_id=?", activity) >= expectedOrders
+@@ -230,6 +233,8 @@ class RealHttpBenchmarkTest extends MySqlContainerSupport {
+         if (kind.equals("success") && (rejected != 0 || finalResponses != requests)) failures.add("all-success traffic rejected or incomplete");
+         if (kind.equals("soldout") && (orderCount != stock || rejected == 0)) failures.add("soldout scenario did not exhaust stock and reject excess");
+         if (kind.equals("limiter") && (throttle == 0 || finalResponses == 0)) failures.add("limiter comparison lacks both accept and throttle observations");
++        if (kind.equals("mixed") && (finalResponses != expectedOrders || rejected != requests / 2 || throttle != 0))
++            failures.add("mixed traffic must confirm one order per user pair and reject the other distinct request");
+         Files.writeString(directory.resolve("redis-info.txt"), template.execute((org.springframework.data.redis.core.RedisCallback<String>) connection ->
+             connection.serverCommands().info().toString()));
+         Files.writeString(directory.resolve("docker-after.json"), command("docker", "stats", "--no-stream", "--format", "{{json .}}", MYSQL.getContainerId(), redis.getContainerId()));

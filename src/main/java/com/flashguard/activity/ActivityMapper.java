@@ -11,6 +11,8 @@ import org.apache.ibatis.annotations.Select;
 
 @Mapper
 public interface ActivityMapper {
+    @Select("SELECT id FROM activity WHERE id > #{afterId} ORDER BY id LIMIT #{limit}")
+    java.util.List<Long> findIdsAfter(@Param("afterId") long afterId, @Param("limit") int limit);
 
     @Select("""
         SELECT a.id,

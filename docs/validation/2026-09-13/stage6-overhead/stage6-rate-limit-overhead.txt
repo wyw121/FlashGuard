@@ -1,0 +1,3 @@
+Sequential 500 allowed calls; 100 warmup calls per mode. No capacity claim.
+local median_us=13.800 p95_us=38.300
+redis median_us=5893.300 p95_us=13635.200

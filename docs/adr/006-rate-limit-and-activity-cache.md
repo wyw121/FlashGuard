@@ -1,0 +1,17 @@
+# ADR 006: Activity cache and participation limits
+
+Status: implemented; measured validation is recorded separately.
+
+Activity reads use bounded Caffeine (10,000 entries, 3-second expire-after-write) and shared Redis (15-second TTL). Positive and missing-ID snapshots use the same bounds. Caffeine `get(key, loader)` coalesces concurrent cold loads within one JVM, including misses. Redis failures and malformed snapshots fall back to MySQL; failures of MySQL itself are not cached. Missing activities return the existing ACTIVITY_NOT_FOUND business response, including cached misses.
+
+This is eventual consistency: without explicit invalidation, activity updates and newly created IDs previously cached as missing may remain stale for up to Redis TTL plus local TTL (normally 18 seconds). Activity detail stock is informational. Inventory initialization MUST read authoritative MySQL stock instead of the activity cache. Redis expiry removes shared entries; bounded Caffeine eviction prevents arbitrary ID probes from retaining unbounded local entries. Cross-instance simultaneous cold misses can still load MySQL once per JVM; no distributed lock is introduced. Under Redis outage each JVM retains only the short local TTL and the database must absorb cold reads.
+
+Local participation admission uses two sliding windows: one per activity (120 admitted requests / 1 second), one per user across ALL activities (5 admitted requests / 1 second). Admission and cleanup share a short monitor, so checking both windows, consuming both budgets, and removing idle state are atomic. A rejection consumes neither budget. Window edges are `(now - window, now]`. Idle maps are swept every 60 seconds; they are time-retained, not cardinality-bounded, and high unique-user/activity rates require memory observation. The single critical section should be measured before introducing striped locking.
+
+`flashguard.ratelimit.global-enabled=false` keeps local admission as default. Setting it true selects one Redis Lua admission per enabled request instead of the local mode; the same activity/user thresholds apply globally. Redis TIME supplies the shared clock; unique request tokens prevent same-millisecond collapse in sorted sets. Lua checks both windows before writing either, and TTLs bound idle state. Both key families share the `{participation}` Redis Cluster hash tag because user limits span activities. This intentionally concentrates global limiter work on one slot; it is not a claim of cluster-wide scale. Redis time-series memory is bounded by admitted counts during each window, plus key overhead.
+
+Global limiter Redis failures reject with THROTTLED (existing HTTP 429), counted under `flashguard_rate_limit_reject_total{scope="redis_unavailable"}`. Fail-closed behavior protects DB/MQ but makes Redis availability part of admission availability. There is no silent fallback that would weaken the global budget. Activity/user rejections retain their existing metric scopes. Disabling `flashguard.ratelimit.enabled` bypasses both modes.
+
+No circuit breaker is added: this admission path has no synchronous remote business RPC that benefits from a breaker. Redis admission is an explicit dependency with a selected failure policy; introducing a generic breaker adds no demonstrated benefit here.
+
+The reproducible Redis integration comparison reports per-call sequential local/global latency, not QPS capacity, DB/MQ protection under saturation, or production SLO compliance. Full ingress load validation remains required before making capacity claims.

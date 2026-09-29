@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.flashguard.mq.ReservationTransactionListenerTest
+-------------------------------------------------------------------------------
+Tests run: 14, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.297 s -- in com.flashguard.mq.ReservationTransactionListenerTest

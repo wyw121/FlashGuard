@@ -1,20 +1,17 @@
 package com.flashguard.activity;
 
-import com.flashguard.shared.error.BusinessCode;
-import com.flashguard.shared.error.BusinessException;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ActivityQueryService {
 
-    private final ActivityMapper activityMapper;
+    private final ActivityCacheService activityCacheService;
 
-    public ActivityQueryService(ActivityMapper activityMapper) {
-        this.activityMapper = activityMapper;
+    public ActivityQueryService(ActivityCacheService activityCacheService) {
+        this.activityCacheService = activityCacheService;
     }
 
     public ActivityView findById(long activityId) {
-        return activityMapper.findById(activityId)
-            .orElseThrow(() -> new BusinessException(BusinessCode.ACTIVITY_NOT_FOUND));
+        return activityCacheService.findById(activityId);
     }
 }

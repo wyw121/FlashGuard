@@ -18,6 +18,18 @@ public record ParticipationOutcome(
         return from(BusinessCode.REPLAY, order);
     }
 
+    public static ParticipationOutcome pending(String requestId) {
+        return pendingForRequestIdWithStatus(requestId, "PENDING");
+    }
+
+    public static ParticipationOutcome pendingForRequestIdWithStatus(String requestId, String status) {
+        return new ParticipationOutcome(BusinessCode.PENDING, requestId, null, status);
+    }
+
+    public static ParticipationOutcome pendingForRequestId(String requestId) {
+        return pending(requestId);
+    }
+
     private static ParticipationOutcome from(BusinessCode code, OrderRecord order) {
         return new ParticipationOutcome(
             code,

@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
@@ -47,12 +49,37 @@ public class GlobalExceptionHandler {
             .body(ApiResponse.error(BusinessCode.INTERNAL_ERROR));
     }
 
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMethodNotAllowed(
+        HttpRequestMethodNotSupportedException exception
+    ) {
+        return ResponseEntity
+            .status(HttpStatus.METHOD_NOT_ALLOWED)
+            .headers(exception.getHeaders())
+            .body(ApiResponse.error(BusinessCode.METHOD_NOT_ALLOWED));
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleUnsupportedMediaType(
+        HttpMediaTypeNotSupportedException exception
+    ) {
+        return ResponseEntity
+            .status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+            .headers(exception.getHeaders())
+            .body(ApiResponse.error(BusinessCode.UNSUPPORTED_MEDIA_TYPE));
+    }
+
     private HttpStatus statusFor(BusinessCode code) {
         return switch (code) {
             case ACTIVITY_NOT_FOUND, PARTICIPATION_NOT_FOUND, ORDER_NOT_FOUND -> HttpStatus.NOT_FOUND;
             case ACTIVITY_NOT_STARTED, ACTIVITY_ENDED, SOLD_OUT, DUPLICATE_PURCHASE ->
                 HttpStatus.CONFLICT;
+            case THROTTLED -> HttpStatus.TOO_MANY_REQUESTS;
+            case SERVICE_UNAVAILABLE -> HttpStatus.SERVICE_UNAVAILABLE;
+            case PENDING -> HttpStatus.ACCEPTED;
             case VALIDATION_ERROR -> HttpStatus.BAD_REQUEST;
+            case METHOD_NOT_ALLOWED -> HttpStatus.METHOD_NOT_ALLOWED;
+            case UNSUPPORTED_MEDIA_TYPE -> HttpStatus.UNSUPPORTED_MEDIA_TYPE;
             case SUCCESS, REPLAY -> HttpStatus.OK;
             case INTERNAL_ERROR -> HttpStatus.INTERNAL_SERVER_ERROR;
         };

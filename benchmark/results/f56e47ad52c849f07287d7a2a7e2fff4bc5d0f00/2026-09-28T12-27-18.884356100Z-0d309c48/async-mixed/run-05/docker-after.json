@@ -1,0 +1,2 @@
+{"BlockIO":"65.8MB / 1.48GB","CPUPerc":"1.24%","Container":"bcf9fcbdcb5e9bcdea0823f41d501fb7f0cb178a4fc9503f78f2b66b19ea00f1","ID":"bcf9fcbdcb5e","MemPerc":"2.92%","MemUsage":"459.8MiB / 15.38GiB","Name":"frosty_bohr","NetIO":"41.1MB / 72.7MB","PIDs":"49"}
+{"BlockIO":"0B / 0B","CPUPerc":"0.51%","Container":"5bbf133fdc6aa6df9468b16ca050155d9e12f9a6deee384a887a3e39c675954d","ID":"5bbf133fdc6a","MemPerc":"0.04%","MemUsage":"6.258MiB / 15.38GiB","Name":"nervous_borg","NetIO":"4.61MB / 1.82MB","PIDs":"6"}

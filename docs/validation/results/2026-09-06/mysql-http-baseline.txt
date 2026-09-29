@@ -1,0 +1,1 @@
+PASS SUCCESS=100 SOLD_OUT=900 orders=100 stock=0

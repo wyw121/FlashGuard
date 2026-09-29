@@ -1,0 +1,16 @@
+-------------------------------------------------------------------------------
+Test set: com.flashguard.perf.RealHttpBenchmarkTest
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 5325 s <<< FAILURE! -- in com.flashguard.perf.RealHttpBenchmarkTest
+com.flashguard.perf.RealHttpBenchmarkTest.repeatableActualHttpComparison -- Time elapsed: 5324 s <<< FAILURE!
+java.lang.AssertionError: 
+[measured correctness/arrival failure stops later rounds; raw evidence=D:\code\flashguard-workbench\flashguard\benchmark\results\82b0718d0865a3a8f9ce6a243c9603b0472d40f9\2026-09-28T10-44-16.868955800Z-03e19b72\async-mixed\run-01] 
+Expecting empty but was: ["k6 threshold/system-error/dropped-iteration gate",
+    "achieved arrivals below 99% of target",
+    "mixed traffic must confirm one order per user pair and reject the other distinct request"]
+	at com.flashguard.perf.RealHttpBenchmarkTest.run(RealHttpBenchmarkTest.java:256)
+	at com.flashguard.perf.RealHttpBenchmarkTest.repeatableActualHttpComparison(RealHttpBenchmarkTest.java:83)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+

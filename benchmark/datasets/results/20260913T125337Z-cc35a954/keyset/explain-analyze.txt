@@ -1,0 +1,3 @@
+-> Limit: 50 row(s)  (cost=1.43 rows=2) (actual time=0.0851..0.223 rows=50 loops=1)
+    -> Filter: ((historical_orders.`status` = 'CONFIRMED') and ((historical_orders.created_at < TIMESTAMP'2020-01-01 03:05:11') or ((historical_orders.created_at = TIMESTAMP'2020-01-01 03:05:11') and (historical_orders.id < 111113))))  (cost=1.43 rows=2) (actual time=0.0835..0.213 rows=50 loops=1)
+        -> Covering index range scan on historical_orders using ix_history_status_created over (status = 'CONFIRMED' AND created_at < '2020-01-01 03:05:11.000000') OR (status = 'CONFIRMED' AND created_at = '2020-01-01 03:05:11.000000' AND id < 111113) (reverse)  (cost=1.43 rows=2) (actual time=0.075..0.176 rows=50 loops=1)

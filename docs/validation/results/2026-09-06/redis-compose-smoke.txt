@@ -1,0 +1,6 @@
+docker compose --profile redis up -d --wait redis: PASS
+redis_version:7.4.8
+maxmemory-policy
+noeviction
+appendonly
+yes

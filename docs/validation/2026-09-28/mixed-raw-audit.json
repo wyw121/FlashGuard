@@ -1,0 +1,112 @@
+[
+  {
+    "scenario": "mysql-mixed",
+    "repetition": 1,
+    "requests": 1801,
+    "orders": 901,
+    "rejections": 900,
+    "status": "PASS",
+    "sourceTreeSha256": "1528e88f01179e44158c08f9a69ae24a4d980598af4bc3ecad155efded899826",
+    "originalSuiteStatus": "FAIL",
+    "rawSummary": "benchmark\\results\\82b0718d0865a3a8f9ce6a243c9603b0472d40f9\\2026-09-28T10-44-16.868955800Z-03e19b72\\mysql-mixed\\run-01/summary.json"
+  },
+  {
+    "scenario": "mysql-mixed",
+    "repetition": 2,
+    "requests": 1801,
+    "orders": 901,
+    "rejections": 900,
+    "status": "PASS",
+    "sourceTreeSha256": "1528e88f01179e44158c08f9a69ae24a4d980598af4bc3ecad155efded899826",
+    "originalSuiteStatus": "FAIL",
+    "rawSummary": "benchmark\\results\\82b0718d0865a3a8f9ce6a243c9603b0472d40f9\\2026-09-28T10-44-16.868955800Z-03e19b72\\mysql-mixed\\run-02/summary.json"
+  },
+  {
+    "scenario": "mysql-mixed",
+    "repetition": 3,
+    "requests": 1800,
+    "orders": 900,
+    "rejections": 900,
+    "status": "PASS",
+    "sourceTreeSha256": "1528e88f01179e44158c08f9a69ae24a4d980598af4bc3ecad155efded899826",
+    "originalSuiteStatus": "FAIL",
+    "rawSummary": "benchmark\\results\\82b0718d0865a3a8f9ce6a243c9603b0472d40f9\\2026-09-28T10-44-16.868955800Z-03e19b72\\mysql-mixed\\run-03/summary.json"
+  },
+  {
+    "scenario": "mysql-mixed",
+    "repetition": 4,
+    "requests": 1801,
+    "orders": 901,
+    "rejections": 900,
+    "status": "PASS",
+    "sourceTreeSha256": "1528e88f01179e44158c08f9a69ae24a4d980598af4bc3ecad155efded899826",
+    "originalSuiteStatus": "FAIL",
+    "rawSummary": "benchmark\\results\\82b0718d0865a3a8f9ce6a243c9603b0472d40f9\\2026-09-28T10-44-16.868955800Z-03e19b72\\mysql-mixed\\run-04/summary.json"
+  },
+  {
+    "scenario": "mysql-mixed",
+    "repetition": 5,
+    "requests": 1800,
+    "orders": 900,
+    "rejections": 900,
+    "status": "PASS",
+    "sourceTreeSha256": "1528e88f01179e44158c08f9a69ae24a4d980598af4bc3ecad155efded899826",
+    "originalSuiteStatus": "FAIL",
+    "rawSummary": "benchmark\\results\\82b0718d0865a3a8f9ce6a243c9603b0472d40f9\\2026-09-28T10-44-16.868955800Z-03e19b72\\mysql-mixed\\run-05/summary.json"
+  },
+  {
+    "scenario": "async-mixed",
+    "repetition": 1,
+    "requests": 1801,
+    "orders": 901,
+    "rejections": 900,
+    "status": "PASS",
+    "sourceTreeSha256": "1528e88f01179e44158c08f9a69ae24a4d980598af4bc3ecad155efded899826",
+    "originalSuiteStatus": "PASS",
+    "rawSummary": "benchmark\\results\\f56e47ad52c849f07287d7a2a7e2fff4bc5d0f00\\2026-09-28T12-27-18.884356100Z-0d309c48\\async-mixed\\run-01/summary.json"
+  },
+  {
+    "scenario": "async-mixed",
+    "repetition": 2,
+    "requests": 1801,
+    "orders": 901,
+    "rejections": 900,
+    "status": "PASS",
+    "sourceTreeSha256": "1528e88f01179e44158c08f9a69ae24a4d980598af4bc3ecad155efded899826",
+    "originalSuiteStatus": "PASS",
+    "rawSummary": "benchmark\\results\\f56e47ad52c849f07287d7a2a7e2fff4bc5d0f00\\2026-09-28T12-27-18.884356100Z-0d309c48\\async-mixed\\run-02/summary.json"
+  },
+  {
+    "scenario": "async-mixed",
+    "repetition": 3,
+    "requests": 1801,
+    "orders": 901,
+    "rejections": 900,
+    "status": "PASS",
+    "sourceTreeSha256": "1528e88f01179e44158c08f9a69ae24a4d980598af4bc3ecad155efded899826",
+    "originalSuiteStatus": "PASS",
+    "rawSummary": "benchmark\\results\\f56e47ad52c849f07287d7a2a7e2fff4bc5d0f00\\2026-09-28T12-27-18.884356100Z-0d309c48\\async-mixed\\run-03/summary.json"
+  },
+  {
+    "scenario": "async-mixed",
+    "repetition": 4,
+    "requests": 1801,
+    "orders": 901,
+    "rejections": 900,
+    "status": "PASS",
+    "sourceTreeSha256": "1528e88f01179e44158c08f9a69ae24a4d980598af4bc3ecad155efded899826",
+    "originalSuiteStatus": "PASS",
+    "rawSummary": "benchmark\\results\\f56e47ad52c849f07287d7a2a7e2fff4bc5d0f00\\2026-09-28T12-27-18.884356100Z-0d309c48\\async-mixed\\run-04/summary.json"
+  },
+  {
+    "scenario": "async-mixed",
+    "repetition": 5,
+    "requests": 1801,
+    "orders": 901,
+    "rejections": 900,
+    "status": "PASS",
+    "sourceTreeSha256": "1528e88f01179e44158c08f9a69ae24a4d980598af4bc3ecad155efded899826",
+    "originalSuiteStatus": "PASS",
+    "rawSummary": "benchmark\\results\\f56e47ad52c849f07287d7a2a7e2fff4bc5d0f00\\2026-09-28T12-27-18.884356100Z-0d309c48\\async-mixed\\run-05/summary.json"
+  }
+]
